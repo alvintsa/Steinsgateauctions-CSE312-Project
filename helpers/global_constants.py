@@ -1,6 +1,0 @@
-B = "BODY"
-T = "TYPE"
-P = "PATH"
-V = "VERSION"
-CL = "Content-Length"
-E404 = "HTTP/1.1 404 Not Found\r\nContent-length: 27\r\nContent-type: text/plain; charset=utf-8\r\nX-Content-Type-Options: nosniff\r\n\r\nRequested content not found"

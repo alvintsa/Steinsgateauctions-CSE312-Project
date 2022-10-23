@@ -1,31 +1,12 @@
-from ..helpers.global_constants import *
+from .parse_header import *
 
 def req_parser(input):
-    request = {}
-
     # isolate the headers, separate and decode them, split into individual header lines
-    input_split = input.split("\r\n\r\n".encode())
-    header_block = input_split[0].decode() 
-    header_lines = header_block.split("\r\n")
-    num_lines = len(header_lines)
+    blocks = input.split("\r\n\r\n".encode(),1)
+    headers = parse_header(blocks[0].decode())
+    headers["BODY"] = blocks[1]
 
-    # request line formatted differently, handled separately.
-    req_line = header_lines[0].split(" ")
-    request[T] = req_line[0] 
-    request[P] = req_line[1] 
-    request[V] = req_line[2] 
-
-    # iterate through each other header, map header label to value in dictionary
-    for lines in range(1,num_lines):
-        line = header_lines[lines].split(": ")
-        request[line[0]] = line[1]
-
-    if (len(input_split) > 1):
-        request[B] = input_split[1]
-    else:
-        request[B] = ""
-
-    return request
+    return headers
 
     # returns a map containing the information in the request parsed according to:
         # [VERSION] -> the version of http
