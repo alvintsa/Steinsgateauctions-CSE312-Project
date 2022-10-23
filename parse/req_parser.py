@@ -1,3 +1,5 @@
+from ..helpers.global_constants import *
+
 def req_parser(input):
     request = {}
 
@@ -9,19 +11,19 @@ def req_parser(input):
 
     # request line formatted differently, handled separately.
     req_line = header_lines[0].split(" ")
-    request["VERSION"] = req_line[0] 
-    request["PATH"] = req_line[1] 
-    request["TYPE"] = req_line[2] 
+    request[T] = req_line[0] 
+    request[P] = req_line[1] 
+    request[V] = req_line[2] 
 
     # iterate through each other header, map header label to value in dictionary
     for lines in range(1,num_lines):
-        line = lines.split(": ")
+        line = header_lines[lines].split(": ")
         request[line[0]] = line[1]
 
     if (len(input_split) > 1):
-        request["BODY"] = input_split[1]
+        request[B] = input_split[1]
     else:
-        request["BODY"] = ""
+        request[B] = ""
 
     return request
 
