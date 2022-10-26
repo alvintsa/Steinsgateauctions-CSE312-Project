@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_file
 app = Flask(__name__)
 
 #just making sure framework is installed properly
@@ -8,7 +8,11 @@ app = Flask(__name__)
 def home_page():
     return render_template('home.html')
 
-#dynamic routing
-#@app.route("/test/<anything>")
-#def route_other(anything):
-#    return f'Hello, {anything}!'
+@app.route('/home.css') 
+def home_css():
+    return send_file('templates/home.css',mimetype="text/css")
+
+@app.route('/testimage/dog.jpg')
+def ret_template():
+    return send_file("testimage/dog.jpg",mimetype="image/gif")
+

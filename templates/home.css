@@ -1,0 +1,43 @@
+body{
+    margin:25px;
+    background-color: lightblue;
+    color: white;
+}
+
+.list_block {
+    margin: auto;
+    width: 100%;
+}
+
+.listing {
+    border: 2px solid;
+    background-color: white;
+    color:black;
+    box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.25);
+    max-width: 20%;
+    margin: auto;
+    text-align: center;
+    font-family: arial;
+    display:inline-block;
+}
+
+.listing button {
+    border: none;
+    outline: 0;
+    padding: 12px;
+    color: white;
+    background-color: black;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    font-size: 18px;
+}
+  
+.listing button:hover {
+    opacity: 0.7;
+}
+
+.price {
+    color: black;
+    font-size: 22px;
+  }
