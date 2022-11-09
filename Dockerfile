@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.9.12
 
 ENV HOME /root
 WORKDIR /root
@@ -7,4 +7,4 @@ COPY . .
 
 RUN pip3 install -r requirements.txt
 
-CMD python3 -m app
+CMD python app.py

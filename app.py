@@ -14,9 +14,21 @@ def home_page():
 def home_css():
     return send_file('templates/home.css',mimetype="text/css")
 
-@app.route('/testimage/dog.jpg')
-def ret_template():
-    return send_file("testimage/dog.jpg",mimetype="image/gif")
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/login.css') 
+def login_css():
+    return send_file('templates/login.css',mimetype="text/css")
+
+@app.route('/dog.jpg')
+def ret_dog():
+    return send_file("images/dog.jpg",mimetype="image/gif")
+
+@app.route('/backdrop.jpg')
+def ret_backdrop():
+    return send_file("images/backdrop.jpg",mimetype="image/gif")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0',port='16969')
