@@ -1,5 +1,5 @@
 body {
-    background-color: pink;
+    background-color: lightblue;
     color: white;
 }
 
@@ -8,4 +8,17 @@ body {
     margin-left: auto;
     margin-right: auto;
     width: 360px;
+}
+
+.button_time {
+  transition-duration: 0.2s;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 20px;
+}
+
+.button_time:hover {
+  background-color: #808080; /* Green */
+  color: white;
 }
