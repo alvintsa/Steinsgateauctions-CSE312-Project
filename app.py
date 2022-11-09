@@ -21,14 +21,17 @@ def home_page():
     return render_template('home.html')
 
 
-@app.route('/auction')
-def auction_page():
-    return render_template('auctionPage.html')
-
-
 @app.route('/home.css')
 def home_css():
     return send_file('templates/home.css', mimetype="text/css")
+
+@app.route('/auction')
+def auction_page():
+    return render_template('auction.html')
+
+@app.route('/auction.css')
+def auction_css():
+    return send_file('templates/auction.css', mimetype="text/css")
 
 
 @app.route('/login')

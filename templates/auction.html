@@ -1,0 +1,40 @@
+<html>
+<head>
+    <title>Steins;Gate Auctions</title>
+    <link rel="stylesheet" type="text/css" href="auction.css"/>
+</head>
+
+<h1 style="text-align:center">Steins;Gate Auctions</h1>
+
+<body onload="welcome();">
+<script src="venv/functions.js"></script>
+</body>
+
+<form action="/image-upload" id="image-form" method="post" enctype="multipart/form-data" style="text-align:center; border-width:2px; border-style:solid; border-color:white; padding: 1em;">
+   <p id="paragraph" style="text-align:center">
+    Put an item up for auction!
+    </p>
+   <label for="form-file">Image: </label>
+   <input id="form-file" type="file" name="upload">
+    <label for="chat-comment">Price: </label>
+    <input id="chat-comment" type="text" name="comment">
+   <input type="submit" value="Post">
+</form>
+
+<div style="text-align:center">
+<label for="chat-comment">Chat: </label>
+<input id="chat-comment" type="text" name="comment">
+
+<button>Send</button>
+
+<div id="chat"></div>
+
+<br/>
+<br/>
+<br/>
+
+<video id="myVideo" autoplay muted></video>
+<br/>
+<video id="otherVideo" autoplay></video>
+</div>
+</html>
