@@ -19,7 +19,7 @@ body {
 }
 
 .button_time:hover {
-  background-color: #808080; /* Green */
+  background-color: #808080;
   color: white;
 }
 
@@ -32,6 +32,8 @@ padding: 10px;
 }
 
 .card {
+border-style: solid;
+border-color: black;
 box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
