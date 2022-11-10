@@ -53,6 +53,33 @@ def ret_dog():
 def ret_backdrop():
     return send_file("images/backdrop.jpg", mimetype="image/gif")
 
+@app.route('/kurisu.jpg')
+def ret_kurisu():
+    return send_file("images/kurisu.jpg", mimetype="image/gif")
+
+@app.route('/okabe.jpg')
+def ret_okabe():
+    return send_file("images/okabe.jpg", mimetype="image/gif")
+
+@app.route('/mayuri.jpeg')
+def ret_mayuri():
+    return send_file("images/mayuri.jpeg", mimetype="image/gif")
+
+@app.route('/ruka.jpeg')
+def ret_ruka():
+    return send_file("images/ruka.jpeg", mimetype="image/gif")
+
+@app.route('/itaru.jpeg')
+def ret_itaru():
+    return send_file("images/itaru.jpeg", mimetype="image/gif")
+
+@app.route('/suzuha.jpeg')
+def ret_suzuha():
+    return send_file("images/suzuha.jpeg", mimetype="image/gif")
+
+@app.route('/logo.png')
+def ret_logo():
+    return send_file("images/logo.png", mimetype="image/gif")
 
 if __name__ == '__main__':
     socketio.run(app)
