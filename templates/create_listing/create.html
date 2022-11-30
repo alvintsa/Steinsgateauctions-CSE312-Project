@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create Listing</title>
+        <link rel="stylesheet" type="text/css" href="create.css">
+    </head>
+
+    <div class = "obox_header">
+        <ul class="navigation">
+            <li class="navlink"><a href="/">Home</a></li>
+            <li class="navlink"><a href="/listings">Listings</a></li>
+            <li class="navlink"><a href="/auctions">Auctions</a></li>
+            <li class="navlink"><a href="/create">Create Listing</a></li>
+            <li class="navlink"><a href="/account">My Account</a></li>
+        </ul>
+    </div>
+    <br/>
+    <div class="form-block">
+        <form action="/create-listing" id="create-form" method="post" enctype="multipart/form-data">
+            <label for="item-name">Name: </label>
+            <textarea id="item-name" name="item-id" cols="40" rows="1"></textarea>
+            <br/>
+            <label for="item-description">Description: </label>
+            <textarea id="item-description" name="item-description" cols="35" rows="1"></textarea>
+            <br/>
+            <label for="listing-price">Price: $</label>
+            <textarea id="item-price" name="item-price" cols="39" rows="1"></textarea>
+            <br/>
+            <br/>
+            <label for="item-image">Image: </label>
+            <input id="item-image" type="file" name="upload">
+            <input type="submit" value="Post Listing">
+            <input value="{{xsrf_token}}" name="xsrf_token" hidden>
+        </form>
+    </div>
+</html>
