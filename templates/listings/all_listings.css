@@ -9,7 +9,6 @@ body{
     width: 100%;
     padding: 20px 20px;
 }
-
 .navigation {
     list-style-type: none;
     margin:0;
@@ -31,14 +30,6 @@ body{
 
 .navlink a:hover {
     background-color: rgb(180, 125, 225);
-}
-
-.dividing_header {
-    background-color: rgba(255, 255, 255, 0.8);
-    color: rgb(50, 0, 80);
-    width: 100%;
-    padding: 20px 20px;
-    text-align:center;
 }
 
 .list_block {
@@ -69,7 +60,7 @@ body{
     width: 100%;
     font-size: 18px;
 }
-  
+
 .listing button:hover {
     opacity: 0.7;
 }
