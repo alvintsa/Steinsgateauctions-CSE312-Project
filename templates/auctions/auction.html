@@ -1,0 +1,74 @@
+<html>
+<head>
+    <title>Steins;Gate Auctions</title>
+    <link rel="stylesheet" type="text/css" href="auction.css"/>
+</head>
+
+<h1 style="text-align:center">Steins;Gate Auctions</h1>
+<body onload="welcome();">
+    <script src="../../functions.js"></script>
+</body>
+
+<form action="/image-upload" id="image-form" method="post" enctype="multipart/form-data" style="text-align:center; border-width:2px; border-style:solid; border-color:white; padding: 1em;">
+    <h3>
+        Place an item up for auction!
+    </h3>
+    <br/>
+    <br/>
+    <label for="form-file">Image: </label>
+    <input id="form-file" type="file" name="upload">
+    <label for="chat-comment">End Time in Minutes: </label>
+    <input id="chat-comment" type="text" name="End_Time" value = "">
+    <label for="chat-comment">Item Name: </label>
+    <input id="chat-comment" type="text" name="Item_Name" value = "">
+    <label for="chat-comment">Description: </label>
+    <input id="chat-comment" type="text" name="Description" value = "">
+    <button onclick="sendMessage()">Auction Item</button>
+</form>
+
+
+<div class="column">
+    <div class="card">
+      <img src="/okabe.jpg" alt="okabe" style="width:100%">
+      <div class="container">
+        <h2>Okabe</h2>
+        <b>Time left: 60 minutes</b>
+        <p>Highest Bid: <b>$2100</b> from <b>Jesse</b></p>
+        <p>He is the main character</p>
+        <p><button class="button2">Join Chat</button></p>
+        <p><button class="button2">Place Bid</button></p>
+      </div>
+    </div>
+</div>
+
+<div class="column">
+    <div class="card">
+      <img src="/kurisu.jpg" alt="kurisu" style="width:100%">
+      <div class="container">
+        <h2>Kurisu</h2>
+        <b>Time left: 40 minutes</b>
+        <p>Highest Bid: <b>Priceless</b> from <b>Okabe</b></p>
+        <p>She is the second main character</p>
+        <p><button class="button2">Join Chat</button></p>
+        <p><button class="button2">Place Bid</button></p>
+      </div>
+    </div>
+</div>
+
+{{loop}}
+<div class="column">
+    <div class="card">
+      <img src="{{ image }}" style="width:100%">
+      <div class="container">
+        <h2>{{ item_name }}</h2>
+        <b>Time left: {{ time }} minutes</b>
+        <p>Highest Bid: <b>{{ highest_bid }}</b> from:  <b>{{ user }}</b></p>
+        <p>{{ description }}</p>
+        <p><button class="button2">Join Chat</button></p>
+        <p><button class="button2">Place Bid</button></p>
+      </div>
+    </div>
+</div>
+{{end_loop}}
+
+</html>
