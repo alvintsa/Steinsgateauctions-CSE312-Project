@@ -1,6 +1,5 @@
-from flask import Flask, render_template, send_file, request, url_for, redirect
+from flask import Flask, render_template, send_file, request, url_for, redirect, Response
 from pymongo import MongoClient
-
 
 app = Flask(__name__)
 
@@ -79,11 +78,19 @@ def auction_css():
 def listing_page():
     return render_template("listings/all_listings.html")
 @app.route('/listings.css')
-def listing_page():
+def listing_css():
     return send_file("templates/listings/all_listings.css")
-@app.route('/create-listing', methods=('POST'))
+@app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
-    pass
+    if request.method=='POST':
+        item_name = request.form["item-name"]
+        item_description = request.form["item-description"]
+        item_price = request.form["item-price"]
+        item_image:bytes = request.form["item-image"]
+
+        listing_db.insert_one({"item-name":item_name, "item-description":item_description, "item-price":item_price, "item-image":item_image})
+    
+    return redirect(url_for('listing_page'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5000')
