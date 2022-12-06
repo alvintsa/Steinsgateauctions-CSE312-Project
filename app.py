@@ -17,6 +17,12 @@ listing_db = mydatabase['listings']
 @app.route('/')
 def home_page():
     return render_template('home.html')
+@app.route('/home.css')
+def home_css():
+    return send_file('templates/home.css',mimetype="text/css")
+@app.route('/logo.png')
+def send_logo():
+    return send_file('images/logo.png')
 
 @app.route('/auctions')
 def auction_page():
@@ -24,9 +30,7 @@ def auction_page():
     #, auction_db=auctions_vals
     return render_template('auctions/auction.html')
 
-@app.route('/home.css')
-def home_css():
-    return send_file('templates/home.css',mimetype="text/css")
+
 
 @app.route('/image-upload', methods=('GET', 'POST'))
 def image_load():
@@ -74,6 +78,12 @@ def auction_css():
 @app.route('/listings')
 def listing_page():
     return render_template("listings/all_listings.html")
+@app.route('/listings.css')
+def listing_page():
+    return send_file("templates/listings/all_listings.css")
+@app.route('/create-listing', methods=('POST'))
+def new_listing():
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5000')
