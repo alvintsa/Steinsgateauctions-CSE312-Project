@@ -15,13 +15,6 @@ mydatabase = client['db']
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
 
-
-
-
-
-#database for auction
-auction_db = mydatabase['auctions']
-
 @app.route('/')
 def home_page():
     return render_template('home.html')
