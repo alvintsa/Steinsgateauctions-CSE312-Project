@@ -8,11 +8,12 @@ app = Flask(__name__)
 #execute python app.py
 #may need to update interpreter to venv
 
-client = MongoClient('localhost', 5000)
+client = MongoClient("mongo")
 mydatabase = client['db']
 
 
 auction_db = mydatabase['auctions']
+listing_db = mydatabase['listings']
 
 
 

@@ -10,22 +10,43 @@
             <li class="navlink"><a href="/">Home</a></li>
             <li class="navlink"><a href="/listings">Listings</a></li>
             <li class="navlink"><a href="/auctions">Auctions</a></li>
-            <li class="navlink"><a href="/create">Create Listing</a></li>
             <li class="navlink"><a href="/account">My Account</a></li>
         </ul>
     </div>
 
     <br/>
+    <div class="form-block">
+        <form action="/create-listing" id="listing-form" method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+            <h3>List an Item for Sale!</h3>
+            <br/>
+            <label for="item-name">Item Name: </label>
+            <input id="item-name" type="text" name="item-name" value = "">
+            <label for="item-description">Description: </label>
+            <input id="item-description" type="text" name="item-name" value="">
+            <label for="listing-price">Price: $</label>
+            <input id="item-price" type="text" name="item-price" value="">
+            <label for="item-image">Image: </label>
+            <input id="item-image" type="file" name="upload">
+            <input type="submit" value="Post Listing">
+            <input value="{{USERXSRF}}" name="user_xsrf" hidden>
+        </form>
+    </div>
 
+    <br/>
+
+    {{OUTERLOOP}}
     <div class="list_block">
+        {{INNERLOOP}}
         <div class="listing">
             <br>
-            <img src="/dog.jpg" alt="test-image" style="max-width:200px">
-            <h2>TEST IMAGE</h2>
-            <p class="price">$199.99</p>
-            <p>This ugly motherfucker is a good boy</p>
+            <img src="/listing/{{ITEMNAME}}.jpg" alt="{{ITEMNAME}}-image" style="max-width:200px">
+            <h2>{{ITEMNAME}}</h2>
+            <p class="price">{{ITEMPRICE}}</p>
+            <p>{{ITEMDESC}}</p>
             <p><button>Add to Cart</button></p>
         </div>
+        {{ENDINNER}}
     </div>
+    {{ENDOUTER}}
 
 </html>
