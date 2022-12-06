@@ -19,6 +19,8 @@
     <input id="form-file" type="file" name="upload">
     <label for="chat-comment">End Time in Minutes: </label>
     <input id="chat-comment" type="text" name="End_Time" value = "">
+    <label for="chat-comment">Item Name: </label>
+    <input id="chat-comment" type="text" name="Item_Name" value = "">
     <label for="chat-comment">Description: </label>
     <input id="chat-comment" type="text" name="Description" value = "">
     <button onclick="sendMessage()">Auction Item</button>
@@ -56,11 +58,11 @@
 {{loop}}
 <div class="column">
     <div class="card">
-      <img src="/{{ image_route }}" style="width:100%">
+      <img src="{{ image }}" style="width:100%">
       <div class="container">
         <h2>{{ item_name }}</h2>
         <b>Time left: {{ time }} minutes</b>
-        <p>Highest Bid: <b>{{ highest_bid }}</b> from <b>{{ user }}</b></p>
+        <p>Highest Bid: <b>{{ highest_bid }}</b> from:  <b>{{ user }}</b></p>
         <p>{{ description }}</p>
         <p><button class="button2">Join Chat</button></p>
         <p><button class="button2">Place Bid</button></p>
