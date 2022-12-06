@@ -11,15 +11,8 @@ app = Flask(__name__)
 client = MongoClient('localhost', 5000)
 mydatabase = client['db']
 
-
-auction_db = mydatabase['auctions']
-
-
-
-
-
 #database for auction
-
+auction_db = mydatabase['auctions']
 
 @app.route('/')
 def home_page():
