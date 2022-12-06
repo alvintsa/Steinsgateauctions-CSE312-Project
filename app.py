@@ -20,7 +20,7 @@ listing_db = mydatabase['listings']
 
 
 #database for auction
-
+auction_db = mydatabase['auctions']
 
 @app.route('/')
 def home_page():
