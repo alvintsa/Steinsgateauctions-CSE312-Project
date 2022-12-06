@@ -21,28 +21,31 @@ def home_page():
 
 @app.route('/auctions')
 def auction_page():
-    #auctions_vals = auctions.find()
-    #, auction_db=auctions_vals
-    return render_template('auctions/auction.html')
+    auctions_vals = list(auction_db.find())
+    return render_template('auctions/auction.html', auction_db=auctions_vals)
 
 @app.route('/home.css')
 def home_css():
     return send_file('templates/home.css',mimetype="text/css")
+
 
 @app.route('/image-upload', methods=('GET', 'POST'))
 def image_load():
     if request.method == 'POST':
         #make sure you escape HTML for all these
         image_name = 'images/' + request.files['upload'].filename
-        #request.files['upload'].save(image_name)
+        request.files['upload'].save(image_name)
         time = request.form['End_Time']
         description = request.form['Description']
         item_name = request.form['Item_Name']
 
-
         auction_db.insert_one({'image_name': image_name, 'time': time, 'description': description, 'item_name': item_name}) #insert into database
+        return render_template('auctions/auction.html', image_name=image_name, item_name=item_name, time=time, description=description)
+    #return redirect(url_for('auction_page'), code=302)
 
-    return redirect(url_for('auction_page'), code=302)
+@app.route('/images/<filename>')
+def display_image(filename):
+    return redirect(url_for('auction_page', filename='images/' + filename), code=301)
 
 @app.route('/login')
 def login_page():
