@@ -11,7 +11,6 @@ app = Flask(__name__)
 client = MongoClient("mongo")
 mydatabase = client['db']
 
-
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
 
@@ -71,6 +70,10 @@ def ret_kurisu():
 @app.route('/auction.css')
 def auction_css():
    return send_file('templates/auctions/auction.css', mimetype="text/css")
+
+@app.route('/listings')
+def listing_page():
+    return render_template("listings/all_listings.html")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5000')
