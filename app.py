@@ -1,5 +1,4 @@
-from flask import Flask, render_template, send_file, request, url_for, redirect, Response
-from helpers.render_listings import *
+from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
 from pymongo import MongoClient
 
 app = Flask(__name__)
@@ -55,7 +54,7 @@ def image_load():
 
     return redirect(url_for('auction_page'), code=302)
 
-@app.route('/<image_name>')
+@app.route('/auctions/<image_name>')
 def display_image(image_name):
     return send_file('images/' + image_name, mimetype="image/gif")
 
@@ -89,54 +88,54 @@ def auction_css():
 
 @app.route('/listings')
 def listing_page():
-    with open('templates/listings/all_listings.html') as html_template:
-        template = html_template.read()
-        loop_start = "{{LOOP}}"
-        loop_end = "{{ENDLOOP}}"
-        start_index = template.find(loop_start)
-        end_index = template.find(loop_end)
-        current_listings = listing_db.find({},{"_id":0})
-        if current_listings:
-            loop_template = template[start_index + len(loop_start):end_index]
-            loop_content = ""
-            for content in current_listings:
-                itemname = content.get("Name", "No Name")
-                itemprice = content.get("Price", "0.00")
-                itemdesc = content.get("Price","No Description")
-                loop_content = loop_content + loop_template
-                loop_content.replace("{{ITEMNAME}}",itemname)
-                loop_content.replace("{{ITEMPRICE}}",itemprice)
-                loop_content.replace("{{ITEMDESC}}",itemdesc)
-            final_content = template[:start_index] + loop_content + template[end_index + len(loop_end):]
-            return app.response_class(final_content,status=200,mimetype='text/html')
-        else:
-            final_content = template[:start_index] + template[end_index + len(loop_end):]
-            return app.response_class(final_content,status=200,mimetype='text/html')
-
+    all_listings = listing_db.find({},{"_id":0})
+    if all_listings:
+        return render_template("listings/all_listings.html", listing_vals=all_listings)
+    else:
+        return render_template("listings/all_listings.html")
 @app.route('/listings.css')
 def listing_css():
     return send_file("templates/listings/all_listings.css")
-
 @app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
     if request.method == 'POST':
-        item_name = request.form.get("Name","")
+        item_name = request.form["Name"]
+        if not item_name:
+            return redirect(url_for('listing_page'), code=302)
         item_name = item_name.replace("&","&amp")
         item_name = item_name.replace("<","&lt")
         item_name = item_name.replace(">","&gt")
-        item_description = request.form.get("Description","")
+        item_name = item_name.replace("/", " ")
+        item_name = item_name.replace(' ', '-')
+        item_description = request.form["Description"]
+        if not item_description:
+            item_description = "No Description"
         item_description = item_description.replace("&","&amp")
         item_description = item_description.replace("<","&lt")
         item_description = item_description.replace(">","&gt")
-        item_price = request.form.get("Price","")
-        item_price = item_price.replace("&","&amp")
-        item_price = item_price.replace("<","&lt")
-        item_price = item_price.replace(">","&gt")
-        item_image = request.form.get("Image",None)
-
-        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price, "Image":item_image})
-    
+        item_price = request.form["Price"]
+        if not item_price:
+            return redirect(url_for('listing_page'), code=302)
+        price_alphabet = ['0','1','2','3','4','5','6','7','8','9','0','.']
+        for char in item_price:
+            if char not in price_alphabet:
+                return redirect(url_for('listing_page'), code=302)
+        if not request.files["Image"]:
+            return redirect(url_for('listing_page'), code=302)
+        else:
+            image_name = "images/" + item_name + ".jpg"
+            request.files["Image"].save(image_name)
+        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
     return redirect(url_for('listing_page'), code=302)
+@app.route('/listing/<itemname>')
+def listing_image(itemname):
+    listing_record = listing_db.find_one({"Name":itemname.replace(".jpg","")})
+    if listing_record:
+        image_path = "images/" + itemname
+        return send_file(image_path,mimetype="image/jpg")
+    else:
+        abort(404)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5000')
