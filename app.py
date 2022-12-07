@@ -95,9 +95,6 @@ def listing_page():
                 loop_content.replace("{{ITEMNAME}}",itemname)
                 loop_content.replace("{{ITEMPRICE}}",itemprice)
                 loop_content.replace("{{ITEMDESC}}",itemdesc)
-            loop_content.replace("&","&amp")
-            loop_content.replace("<","&lt")
-            loop_content.replace(">","&gt")
             final_content = template[:start_index] + loop_content + template[end_index + len(loop_end):]
             return app.response_class(final_content,status=200,mimetype='text/html')
         else:
@@ -112,8 +109,17 @@ def listing_css():
 def new_listing():
     if request.method == 'POST':
         item_name = request.form.get("Name","")
+        item_name = item_name.replace("&","&amp")
+        item_name = item_name.replace("<","&lt")
+        item_name = item_name.replace(">","&gt")
         item_description = request.form.get("Description","")
+        item_description = item_description.replace("&","&amp")
+        item_description = item_description.replace("<","&lt")
+        item_description = item_description.replace(">","&gt")
         item_price = request.form.get("Price","")
+        item_price = item_price.replace("&","&amp")
+        item_price = item_price.replace("<","&lt")
+        item_price = item_price.replace(">","&gt")
         item_image = request.form.get("Image",None)
 
         listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price, "Image":item_image})
