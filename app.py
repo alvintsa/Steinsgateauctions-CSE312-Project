@@ -15,6 +15,9 @@ mydatabase = client['db']
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
 
+def escapeHTML(input):
+    return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
+
 @app.route('/')
 def home_page():
     return render_template('home.html')
@@ -24,11 +27,6 @@ def auction_page():
     auctions_vals = list(auction_db.find({}))
     if(auctions_vals != []):
         auctions_vals = list(auction_db.find({}))
-        #image_name = auctions_vals['image_name'][6:] #has /root/ infront for somr reason
-        #item_name = auctions_vals['item_name']
-        #time = auctions_vals['time']
-        #description = auctions_vals['description']
-
         return render_template('auctions/auction.html', auctions_vals=auctions_vals)
     else:
         return render_template('auctions/auction.html')
@@ -43,11 +41,12 @@ def home_css():
 def image_load():
     if request.method == 'POST':
         #make sure you escape HTML for all these
+        #need to make sure users can't access a different file using /../.
         image_name = 'images/' + request.files['upload'].filename
         request.files['upload'].save(image_name)
-        time = request.form['End_Time']
-        description = request.form['Description']
-        item_name = request.form['Item_Name']
+        time = escapeHTML(request.form['End_Time'])
+        description = escapeHTML(request.form['Description'])
+        item_name = escapeHTML(request.form['Item_Name'])
 
         auction_db.insert_one({'image_name': image_name, 'time': time, 'description': description, 'item_name': item_name}) #insert into database
 
