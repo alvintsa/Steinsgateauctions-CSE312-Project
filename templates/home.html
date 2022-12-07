@@ -24,30 +24,16 @@
     <h1 class="dividing_header">Featured Listings</h1>
     <br/>
     <!--WILL GO IN A LOOP WHEN WE FINISH THE HTML FORMATTER-->
-    <div class="list_block">
-        <div class="listing">
-            <br>
-            <img src="/dog.jpg" alt="test-image" style="max-width:200px">
-            <h2>TEST IMAGE</h2>
-            <p class="price">$199.99</p>
-            <p>This ugly motherfucker is a good boy</p>
-            <p><button>Add to Cart</button></p>
-        </div>
+    {% block listings %}
+    {% for line in listing_vals %}
+    <div class="listing" style="width:225px; height:450px">
+        <br>
+        <img src="/listing/{{ line['Name'] }}.jpg" alt="{{ line['Name'] }}-image" style="width:200px; height:200px">
+        <h2>{{ (line['Name'].replace('-',' ')).replace('~','') }}</h2>
+        <p class="price">${{ line["Price"] }}</p>
+        <p>{{ line['Description'] }}</p>
+        <p><button>Add to Cart</button></p>
     </div>
-    <br/>
-    <!--Auctions Ending Soon-->
-    <h1 class="dividing_header">Featured Auctions</h1>
-    <br/>  
-    <!--WILL GO IN A LOOP WHEN WE FINISH THE HTML FORMATTER-->
-    <div class="list_block">
-        <div class="listing">
-            <br>
-            <img src="/dog.jpg" alt="test-image" style="max-width:200px">
-            <h2>TEST IMAGE</h2>
-            <p class="price">$199.99</p>
-            <p>This ugly motherfucker is a good boy</p>
-            <p><button>Add to Cart</button></p>
-        </div>
-    </div>
-    
+    {% endfor %}
+    {% endblock %}
 </html>

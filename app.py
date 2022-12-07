@@ -18,6 +18,9 @@ def escapeHTML(input):
 
 @app.route('/')
 def home_page():
+    current_listings = listing_db.find().limit(5)
+    if current_listings:
+        return render_template('home.html',listing_vals=current_listings)
     return render_template('home.html')
 @app.route('/home.css')
 def home_css():
@@ -93,9 +96,11 @@ def listing_page():
         return render_template("listings/all_listings.html", listing_vals=all_listings)
     else:
         return render_template("listings/all_listings.html")
+
 @app.route('/listings.css')
 def listing_css():
     return send_file("templates/listings/all_listings.css")
+
 @app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
     if request.method == 'POST':
@@ -133,8 +138,10 @@ def new_listing():
             request.files["Image"].save(image_name)
         listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
     return redirect(url_for('listing_page'), code=302)
+
 @app.route('/listing/<itemname>')
 def listing_image(itemname):
+    #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
     listing_record = listing_db.find_one({"Name":itemname.replace(".jpg","")})
     if listing_record:
         image_path = "images/" + itemname
