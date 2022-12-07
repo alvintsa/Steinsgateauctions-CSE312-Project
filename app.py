@@ -23,13 +23,13 @@ def home_page():
 def auction_page():
     auctions_vals = list(auction_db.find({}))
     if(auctions_vals != []):
-        auctions_vals = list(auction_db.find({}))[0]
-        image_name = auctions_vals['image_name'][6:] #has /root/ infront for somr reason
-        item_name = auctions_vals['item_name']
-        time = auctions_vals['time']
-        description = auctions_vals['description']
+        auctions_vals = list(auction_db.find({}))
+        #image_name = auctions_vals['image_name'][6:] #has /root/ infront for somr reason
+        #item_name = auctions_vals['item_name']
+        #time = auctions_vals['time']
+        #description = auctions_vals['description']
 
-        return render_template('auctions/auction.html', image_name=image_name, item_name=item_name, time=time, description=description)
+        return render_template('auctions/auction.html', auctions_vals=auctions_vals)
     else:
         return render_template('auctions/auction.html')
 
