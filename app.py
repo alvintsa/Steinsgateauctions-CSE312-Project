@@ -1,4 +1,5 @@
 from flask import Flask, render_template, send_file, request, url_for, redirect, Response
+from helpers.render_listings import *
 from pymongo import MongoClient
 
 app = Flask(__name__)
@@ -76,21 +77,48 @@ def auction_css():
 
 @app.route('/listings')
 def listing_page():
-    return render_template("listings/all_listings.html")
+    with open('templates/listings/all_listings.html') as html_template:
+        template = html_template.read()
+        loop_start = "{{LOOP}}"
+        loop_end = "{{ENDLOOP}}"
+        start_index = template.find(loop_start)
+        end_index = template.find(loop_end)
+        current_listings = listing_db.find({},{"_id":0})
+        if current_listings:
+            loop_template = template[start_index + len(loop_start):end_index]
+            loop_content = ""
+            for content in current_listings:
+                itemname = content.get("Name", "No Name")
+                itemprice = content.get("Price", "0.00")
+                itemdesc = content.get("Price","No Description")
+                loop_content = loop_content + loop_template
+                loop_content.replace("{{ITEMNAME}}",itemname)
+                loop_content.replace("{{ITEMPRICE}}",itemprice)
+                loop_content.replace("{{ITEMDESC}}",itemdesc)
+            loop_content.replace("&","&amp")
+            loop_content.replace("<","&lt")
+            loop_content.replace(">","&gt")
+            final_content = template[:start_index] + loop_content + template[end_index + len(loop_end):]
+            return app.response_class(final_content,status=200,mimetype='text/html')
+        else:
+            final_content = template[:start_index] + template[end_index + len(loop_end):]
+            return app.response_class(final_content,status=200,mimetype='text/html')
+
 @app.route('/listings.css')
 def listing_css():
     return send_file("templates/listings/all_listings.css")
+
 @app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
-    if request.method=='POST':
-        item_name = request.form["item-name"]
-        item_description = request.form["item-description"]
-        item_price = request.form["item-price"]
-        item_image:bytes = request.form["item-image"]
+    if request.method == 'POST':
+        item_name = request.form.get("Name","")
+        item_description = request.form.get("Description","")
+        item_price = request.form.get("Price","")
+        item_image = request.form.get("Image",None)
 
-        listing_db.insert_one({"item-name":item_name, "item-description":item_description, "item-price":item_price, "item-image":item_image})
+        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price, "Image":item_image})
     
-    return redirect(url_for('listing_page'))
+    return redirect(url_for('listing_page'), code=302)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5000')
