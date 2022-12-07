@@ -107,6 +107,12 @@ def new_listing():
         item_name = item_name.replace(">","&gt")
         item_name = item_name.replace("/", " ")
         item_name = item_name.replace(' ', '-')
+
+        prev_listing = listing_db.find_one({"Name":item_name})
+        while prev_listing:
+            item_name = item_name + '~'
+            prev_listing = listing_db.find_one({"Name":item_name})
+
         item_description = request.form["Description"]
         if not item_description:
             item_description = "No Description"
