@@ -21,8 +21,14 @@ def home_page():
 
 @app.route('/auctions')
 def auction_page():
-    auctions_vals = list(auction_db.find())
-    return render_template('auctions/auction.html', auction_db=auctions_vals)
+    auctions_vals = list(auction_db.find({}))[0]
+    image_name = auctions_vals['image_name'][6:] #has /root/ infront for somr reason
+    item_name = auctions_vals['item_name']
+    time = auctions_vals['time']
+    description = auctions_vals['description']
+
+    return render_template('auctions/auction.html', image_name=image_name, item_name=item_name, time=time, description=description)
+
 
 @app.route('/home.css')
 def home_css():
@@ -40,12 +46,12 @@ def image_load():
         item_name = request.form['Item_Name']
 
         auction_db.insert_one({'image_name': image_name, 'time': time, 'description': description, 'item_name': item_name}) #insert into database
-        return render_template('auctions/auction.html', image_name=image_name, item_name=item_name, time=time, description=description)
-    #return redirect(url_for('auction_page'), code=302)
+        #return render_template('auctions/auction.html', image_name=image_name, item_name=item_name, time=time, description=description)
+    return redirect(url_for('auction_page'), code=302)
 
 @app.route('/images/<filename>')
 def display_image(filename):
-    return redirect(url_for('auction_page', filename='images/' + filename), code=301)
+    return send_file("images/" + filename, mimetype="image/gif")
 
 @app.route('/login')
 def login_page():
