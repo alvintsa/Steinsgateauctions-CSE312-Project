@@ -10,7 +10,7 @@
     height: 100%;
     width: 100%;
     /* This sets the color of the background image */
-    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(224760.jpg);
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('backdrop.jpg');
     background-position: center;
     background-size: cover;
     position: absolute;
