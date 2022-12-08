@@ -20,16 +20,43 @@ auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
 cart_db = mydatabase['items']
 users_db = mydatabase['users']
+tokens_db = mydatabase['tokens']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
 
 @app.route('/')
 def home_page():
+    visit_count = request.cookies.get("visit_count")
+    print("VISITS", visit_count, flush=True)
     current_listings = listing_db.find().limit(5)
+    # cookie_stuff = authentication.process_cookies(request)
+
     if current_listings:
-        return render_template('home.html',listing_vals=current_listings)
+        if visit_count: # if logged in
+            cookie_stuff = authentication.process_cookies(request)
+            
+            token = cookie_stuff["pre_hash_auth_token"]
+            visit_count = cookie_stuff["visit_count"]
+            print("ANIME", visit_count, flush = True)
+            username = cookie_stuff["username"]
+            # hashed_token = cookie_stuff["hashed_token"]
+
+            response = make_response(render_template("home.html", listing_vals=current_listings, token = "penis", visit_count = cookie_stuff["visit_count"], username = username))
+            response.set_cookie("visit_count", str(visit_count))
+            response.set_cookie("token", token)
+
+            return response
+            
+        return(render_template("home.html", listing_vals=current_listings))
+
+        # # if first time every loading page; we have to set set cookies 
+        # response = make_response(render_template("home.html", listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"]))
+
+        # return render_template('home.html',listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"])
+
     return render_template('home.html')
+
 
 @app.route('/home.css')
 def home_css():
@@ -120,7 +147,13 @@ def login():
 
                 users_db.update_one({"username": username}, {"$set": {"auth_token": token_hash}})
 
-                return redirect('/')
+                cookie_stuff = authentication.process_cookies(request)
+                response = make_response(redirect('/'))
+                print("RANDOMTOKENLOGIN", random_token, flush = True)
+                response.set_cookie("token", random_token)
+                response.set_cookie("visit_count" , cookie_stuff["visit_count"])
+
+                return response
             else:
                 abort(404)
         else:
@@ -146,13 +179,13 @@ def register():
         if user_exists == None:
             print("YES", user_exists, flush = True)
             salted_hash_password = authentication.salted_hash(request.form['password'])
-            users_db.insert_one({'username': request.form['username'], 'password': salted_hash_password})
+            users_db.insert_one({'username': request.form['username'], 'password': salted_hash_password, "auth_token": "".encode(), "xsrf": ""})
             # session['username'] = request.form['username']
 
             print("username", request.form['username'], flush=True)
             print("password", request.form['password'], flush=True)
 
-            return redirect('/')
+            return redirect('/login')
             # return redirect(url_for('templates/user_account/home.html'))
         else:
          print("NO", flush = True)
