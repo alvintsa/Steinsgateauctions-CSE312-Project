@@ -1,5 +1,11 @@
 from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
 from pymongo import MongoClient
+import bcrypt
+import random
+import string
+import hashlib
+
+import authentication
 
 app = Flask(__name__)
 
@@ -13,6 +19,7 @@ mydatabase = client['db']
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
 cart_db = mydatabase['items']
+users_db = mydatabase['users']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
@@ -78,21 +85,87 @@ def image_load():
 def display_image(image_name):
     return send_file('images/' + image_name, mimetype="image/gif")
 
-@app.route('/login')
-def login_page():
-    return render_template('/login/loginPage.html')
+@app.route('/login', methods = ('GET', 'POST'))
+def login():
+    if request.method == 'GET':
+        print("GET", request, "GET", flush = True)
+        return render_template('/login/loginPage.html')
+    
+    if request.method == 'POST':
+        # request.form
 
-@app.route('/register')
-def register_page():
-    return render_template('/login/registerPage.html')
+        username = request.form['username']
+        password = request.form['password']
+        salt = bcrypt.gensalt()
+        hash = bcrypt.hashpw(password.encode(), salt)
+        print("Loginhash", hash, flush = True)
 
-@app.route('/login.css')
+        to_check = users_db.find_one({"username":username})
+
+        if to_check != None: 
+            db_pass_hash = to_check["password"]
+            result = bcrypt.checkpw(password.encode(), db_pass_hash)
+
+            if result == True:
+                print("result", result, flush = True)
+
+                print("whattoehck", db_pass_hash, flush = True)
+
+                print("found", flush = True)
+
+                #auth token
+                random_token = "".join(random.choices(string.ascii_uppercase + string.digits, k = 64)) # generates a random alphanumeric string with length 64
+    
+                token_hash = hashlib.sha256(random_token.encode()).digest() # SHA256 hash for authenitcation token cookie
+
+                users_db.update_one({"username": username}, {"$set": {"auth_token": token_hash}})
+
+                return redirect('/')
+            else:
+                abort(404)
+        else:
+            abort(404)
+   
+
+@app.route('/register', methods = ('GET', 'POST'))
+def register():
+    print("REGISTER? Anyone there?", flush=True)
+    print("REQUEST", request, "ENDREQUEST", flush = True)
+
+    if request.method == 'GET':
+        print("GET", request, "GET", flush = True)
+        return render_template('register/registerPage.html')
+
+    if request.method == 'POST':
+        # request.form
+        print("POST", request.form['username'], flush=True)
+        print("penis", request.form['username'], flush=True)
+
+        user_exists = users_db.find_one({'username': request.form['username']}) 
+
+        if user_exists == None:
+            print("YES", user_exists, flush = True)
+            salted_hash_password = authentication.salted_hash(request.form['password'])
+            users_db.insert_one({'username': request.form['username'], 'password': salted_hash_password})
+            # session['username'] = request.form['username']
+
+            print("username", request.form['username'], flush=True)
+            print("password", request.form['password'], flush=True)
+
+            return redirect('/')
+            # return redirect(url_for('templates/user_account/home.html'))
+        else:
+         print("NO", flush = True)
+         abort(404)
+
+@app.route('/logstyle.css')
 def login_css():
     return send_file('templates/login/logstyle.css',mimetype="text/css")
 
-@app.route('/register.css')
+@app.route('/registerstyle.css')
 def register_css():
-    return send_file('templates/login/registerstyle.css', mimetype= "text/css")
+    print("CSS", request, "CSS", flush = True)
+    return send_file('templates/register/registerstyle.css', mimetype= "text/css")
 
 @app.route('/dog.jpg')
 def ret_dog():

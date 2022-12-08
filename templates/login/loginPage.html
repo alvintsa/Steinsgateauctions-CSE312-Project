@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <title>Ecom Deez Nutz</title>
-        <link rel="stylesheet" href="./logstyle.css">
+        <link rel="stylesheet" type="text/css" href="/logstyle.css">
 
     </head>
     <body>
@@ -13,12 +13,17 @@
                     <button type="button" class="t_btn" onclick="login()">Log In</button></a>
                     <a href="./registerPage.html"><button type="button" class="t_btn" onclick="register()">Register</button></a>
                 </div>
-                <form id="login" method = "POST" action ='/login' class="input_group">
-                    <input type="text" class="input_field" placeholder="User ID" required>
-                    <input type="text" class="input_field" placeholder="Enter Password" required>
-                    <!-- <input type= "" class="check_box"><span>Register</span> -->
-                    <button type="submit" class="submit_btn">Log In</button>
-                </form>
+                <form action="/login" id="login-form" method="post" enctype="multipart/form-data">
+                    <!-- <form action="register" method = "POST" action ='/register' class="input_group"> -->
+                        <!-- <label for="item-name">*Item Name: </label>
+                        <input id="item-name" type="text" name="Name" value = ""> -->
+    
+                        <input id = "username" type="text" class="input_field" placeholder="Enter Username" name = "username" value="" required>
+                        <!-- <input type="email" class="input_field" placeholder="Email ID" required>   -->
+                        <input id = "password" type="text" class="input_field" placeholder="Enter Password" name = "password" value="" required>
+                        <input type="checkbox" class="check_box"><span>I agree to the Tearms and Conditions</span>
+                        <button type="submit" class="submit_btn" value = "Login User">Login</button>
+                    </form>
                 <!-- <form id="register" class="input_group">
                     <input type="text" class="input_field" placeholder="username" required>
                     <input type="text" class="input_field" placeholder="password" required>
