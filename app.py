@@ -26,7 +26,7 @@ def home_page():
 
 @app.route('/home.css')
 def home_css():
-    return send_file('templates/home.css',mimetype="text/css")
+    return send_file('templates/home.css', mimetype="text/css")
 @app.route('/logo.png')
 def send_logo():
     return send_file('images/logo.png')

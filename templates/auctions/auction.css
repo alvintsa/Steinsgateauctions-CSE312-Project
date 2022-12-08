@@ -1,6 +1,6 @@
 body {
-    background-color: lightblue;
-    color: white;
+    background-image: url("backdrop.jpg");
+    background-attachment: fixed;
 }
 
 .obox_header {
@@ -64,10 +64,12 @@ padding: 10px;
 border-style: solid;
 border-color: black;
 box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+background-color: white
 }
 
 .container {
 padding: 0 16px;
+
 }
 
 .container::after, .row::after {
