@@ -63,15 +63,15 @@ def process_cookies(request):
             #     self.request.sendall(response.encode())
 
 
-        else: # if there is no token cookie, which means first time registering, SO THIS IS WHEN THEY FIRST REGISTER!
-            visit_count = int(request.headers["Cookie"].strip().split("=")[1]) + 1
-            # response = "HTTP/1.1" + " " + "200 " + " OK\r\nContent-Type: " + "text/html; charset=utf-8" + "\r\nX-Content-Type-Options: nosniff\r\n" + "Set-Cookie: visits=" + str(visit_count)+"; Max-Age=3600; HttOnly"
-            print("DOESNT GO TO TEMPLATE")
-            random_token = "".join(random.choices(string.ascii_uppercase + string.digits, k = 64)) # generates a random alphanumeric string with length 16
-            print(random_token)
-            tokens_db.insert_one({"token": random_token})
-            # template = template_engine.render_template('index.html', {"token": random_token, "visit_count": str(visit_count)})
-            return ({"token": random_token, "visit_count": str(visit_count)})
+        # else: # if there is no token cookie, which means first time registering, SO THIS IS WHEN THEY FIRST REGISTER!
+        #     visit_count = int(request.headers["Cookie"].strip().split("=")[1]) + 1
+        #     # response = "HTTP/1.1" + " " + "200 " + " OK\r\nContent-Type: " + "text/html; charset=utf-8" + "\r\nX-Content-Type-Options: nosniff\r\n" + "Set-Cookie: visits=" + str(visit_count)+"; Max-Age=3600; HttOnly"
+        #     print("DOESNT GO TO TEMPLATE")
+        #     random_token = "".join(random.choices(string.ascii_uppercase + string.digits, k = 64)) # generates a random alphanumeric string with length 16
+        #     print(random_token)
+        #     tokens_db.insert_one({"token": random_token})
+        #     # template = template_engine.render_template('index.html', {"token": random_token, "visit_count": str(visit_count)})
+        #     return ({"token": random_token, "visit_count": str(visit_count)})
 
             # print("this is response", response)
             
