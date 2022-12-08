@@ -12,6 +12,7 @@ mydatabase = client['db']
 
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
+cart_db = mydatabase['items']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
@@ -22,12 +23,32 @@ def home_page():
     if current_listings:
         return render_template('home.html',listing_vals=current_listings)
     return render_template('home.html')
+
 @app.route('/home.css')
 def home_css():
     return send_file('templates/home.css',mimetype="text/css")
 @app.route('/logo.png')
 def send_logo():
     return send_file('images/logo.png')
+
+
+@app.route('/shoppingcart')
+def shopping_cart():
+    cart_vals = list(cart_db.find({}))
+    if(cart_vals != []):
+        cart_vals = list(cart_db.find({}))
+        return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
+    else:
+        return render_template('shoppingcart/shoppingcart.html')
+
+
+@app.route('/cart.css')
+def shopping_cart_css():
+    return send_file('templates/shoppingcart/cart.css', mimetype="text/css")
+
+@app.route('/style.css')
+def cart_css():
+    return send_file('templates/cart/style.css',mimetype="text/css")
 
 @app.route('/auctions')
 def auction_page():
@@ -37,10 +58,6 @@ def auction_page():
         return render_template('auctions/auction.html', auctions_vals=auctions_vals)
     else:
         return render_template('auctions/auction.html')
-
-
-
-
 
 @app.route('/image-upload', methods=('GET', 'POST'))
 def image_load():
@@ -63,11 +80,19 @@ def display_image(image_name):
 
 @app.route('/login')
 def login_page():
-    return render_template('login.html')
+    return render_template('/login/loginPage.html')
+
+@app.route('/register')
+def register_page():
+    return render_template('/login/registerPage.html')
 
 @app.route('/login.css')
 def login_css():
-    return send_file('templates/login.css',mimetype="text/css")
+    return send_file('templates/login/logstyle.css',mimetype="text/css")
+
+@app.route('/register.css')
+def register_css():
+    return send_file('templates/login/registerstyle.css', mimetype= "text/css")
 
 @app.route('/dog.jpg')
 def ret_dog():

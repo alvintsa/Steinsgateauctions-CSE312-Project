@@ -1,0 +1,50 @@
+<html>
+<head>
+    <title>Steins;Gate Cart</title>
+    <link rel="stylesheet" type="text/css" href="auction.css"/>
+</head>
+
+<div class = "obox_header">
+  <ul class="navigation">
+      <li class="navlink"><a href="/">Home</a></li>
+      <li class="navlink"><a href="/listings">Listings</a></li>
+      <li class="navlink"><a href="/account">My Account</a></li>
+      <li class="navlink"><a href="/shoppingcart">My Cart</a></li>
+
+  </ul>
+</div>
+
+<h1 style="text-align:center">Steins;Gate Cart</h1>
+<body onload="welcome();">
+    <script src="../../functions.js"></script>
+</body>
+
+<div class="column">
+    <div class="card">
+      <img src="/okabe.jpg" alt="okabe" style="width:100%">
+      <div class="container">
+        <h2>Okabe</h2>
+        <b>$199.99</b>
+        <p>Blah Blah Blah</p>
+        <p><button class="button2" onclick="sendMessage()">Remove</button></p>
+      </div>
+    </div>
+</div>
+
+{% block listings %}
+{% for line in cart_vals %}
+<div class="column">
+    <div class="card">
+      <img src="/cart/{{ line['image_name']}}" style="width:100%">
+      <div class="container">
+        <h2>{{ line['item_name'] }}</h2>
+        <b>{{ line['Price'] }}</b>
+        <p>{{ line['description'] }}</p>
+        <p><button class="button2">Remove</button></p>
+      </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+</html>
