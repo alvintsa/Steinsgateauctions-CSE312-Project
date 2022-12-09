@@ -58,11 +58,15 @@ def send_logo():
 
 @app.route('/shoppingcart')
 def shopping_cart():
-    cart_vals = cart_db.find({},{"_id":0})
-    if cart_vals:
-        return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
-    else:
-        return render_template('shoppingcart/shoppingcart.html')
+    if "token" in request.cookies:
+        auth_token = request.cookies.get("token")
+        auth_hash = hashlib.sha256(auth_token.encode()).digest()
+        user_record = users_db.find_one({"auth_token":auth_hash})
+        if user_record:
+            username = user_record["username"]
+            cart_vals = cart_db.find({"username":username})
+            return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
+    return redirect(url_for('login'), code=302) 
 
 
 @app.route('/cart.css')
@@ -229,7 +233,6 @@ def listing_css():
 @app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
     if request.method == 'POST':
-
         if "token" not in request.cookies:
             return redirect(url_for('login'), code=302)
         auth_token = request.cookies.get("token")
@@ -278,41 +281,52 @@ def new_listing():
 @app.route('/addtocart', methods=('GET','POST'))
 def add_cart():
     if request.method == "POST":
-        item_name = request.form["ItemName"]
-        item_price = ''
-        item_description = ''
-        item_image = ''
-
-        for data in listing_db.find({}):
-            if data["Name"] == item_name:
-                item_description = data["Description"]
-                item_price = data["Price"]
-               
-        print(item_name)
-        print(item_price)
-        print(item_description)
-
-        cart_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
+        if "token" in request.cookies:
+            auth_token = request.cookies.get("token")
+            auth_hash = hashlib.sha256(auth_token.encode()).digest()
+            user_record = users_db.find_one({"auth_token":auth_hash})
+            if user_record:
+                username = user_record["username"]
+                item_name = request.form["ItemName"]
+                already_in_cart = cart_db.find_one({
+                    '$and':[
+                        {"username":username},
+                        {"Name":item_name}
+                    ]
+                })
+                if already_in_cart:
+                    return redirect(url_for('shopping_cart'), code=302)
+                item_price = ''
+                item_description = ''
+                for data in listing_db.find({}):
+                    if data["Name"] == item_name:
+                        item_description = data["Description"]
+                        item_price = data["Price"]
+                cart_db.insert_one({"username":username, "Name":item_name, "Description":item_description, "Price":item_price})
+                return redirect(url_for('shopping_cart'), code=302)
+            return redirect(url_for('login'), code=302) 
+        return redirect(url_for('login'), code=302)
     return redirect(url_for('shopping_cart'), code=302)
 
-@app.route('/remove', methods=('GET','POST'))
+@app.route('/remove_cart', methods=('GET','POST'))
 def update_cart():
     if request.method == "POST":
-        item_name = request.form["Item_ID"]
-        item_price = ''
-        item_description = ''
-
-        for data in cart_db.find({}):
-            if data["Name"] == item_name:
-                item_description = data["Description"]
-                item_price = data["Price"]
-          
-        print(item_name)
-        print(item_price) 
-        print(item_description)
-
-        cart_db.delete_one({"Name":item_name})
-
+        if "token" in request.cookies:
+            auth_token = request.cookies.get("token")
+            auth_hash = hashlib.sha256(auth_token.encode()).digest()
+            user_record = users_db.find_one({"auth_token":auth_hash})
+            if user_record:
+                username = user_record["username"]
+                item_name = request.form["Item_ID"]
+                cart_db.delete_one({
+                    '$and':[
+                        {"username":username},
+                        {"Name":item_name}
+                    ] 
+                })
+                return redirect(url_for('shopping_cart'), code=302)
+            return redirect(url_for('login'), code=302)
+        return redirect(url_for('login'), code=302)
     return redirect(url_for('shopping_cart'), code=302)
 
 @app.route('/listing/<itemname>')
@@ -340,6 +354,7 @@ def my_account():
 @app.route('/account.css')
 def my_account_css():
     return send_file('templates/user_account/account.css')
+
 @app.route('/cart/<itemname>')
 def cart_image(itemname):
     #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
