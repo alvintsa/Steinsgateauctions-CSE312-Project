@@ -22,6 +22,7 @@
             <li class="navlink"><a href="/auctions">Auctions</a></li>
             <li class="navlink"><a href="/account">My Account</a></li>
             <li class="navlink"><a href="/shoppingcart">My Cart</a></li>
+            <li class="navlink"><a href="/login">Log in</a></li>
         </ul>
     </div>
 
@@ -38,7 +39,10 @@
         <h2>{{ (line['Name'].replace('-',' ')).replace('~','') }}</h2>
         <p class="price">${{ line["Price"] }}</p>
         <p>{{ line['Description'] }}</p>
-        <p><button>Add to Cart</button></p>
+        <form action="/addtocart" id="cart-form" method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+            <input id="itemId" value="{{ line['Name'] }}" name="ItemName" hidden>
+            <input type="submit" id="addtocart" value= "Add to Cart">
+        </form>
     </div>
     {% endfor %}
     {% endblock %}

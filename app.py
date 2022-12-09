@@ -1,5 +1,7 @@
 from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
 from pymongo import MongoClient
+from secure import Secure
+secure_headers = Secure()
 import bcrypt
 import random
 import string
@@ -9,9 +11,13 @@ import authentication
 
 app = Flask(__name__)
 
-#just making sure framework is installed properly
-#execute python app.py
-#may need to update interpreter to venv
+#Security Considerations
+    #x-content-type nosniff set by secure on all responses
+    #html escaped in all form data that can be returned to some user
+    #all passwords stored hashed and salted
+    #auth tokens stored hashed
+    #auth tokens cookie set http only
+    #all private pages redirect to login if user is not authenticated
 
 client = MongoClient("mongo")
 mydatabase = client['db']
@@ -21,6 +27,8 @@ cart_db = mydatabase['items']
 users_db = mydatabase['users']
 tokens_db = mydatabase['tokens']
 uaccount_db = mydatabase['user_accounts']
+sold_db = mydatabase['sold']
+purchased_db = mydatabase['purchased']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
@@ -58,12 +66,21 @@ def send_logo():
 
 @app.route('/shoppingcart')
 def shopping_cart():
-    cart_vals = cart_db.find({},{"_id":0})
-    if cart_vals:
-        return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
-    else:
-        return render_template('shoppingcart/shoppingcart.html')
-
+    if "token" in request.cookies:
+        auth_token = request.cookies.get("token")
+        auth_hash = hashlib.sha256(auth_token.encode()).digest()
+        user_record = users_db.find_one({"auth_token":auth_hash})
+        if user_record:
+            username = user_record["username"]
+            cart_vals = cart_db.find({"username":username})
+            records = cart_db.find({"username":username})
+            total = 0
+            if records:
+                for item in records:
+                    total += float(item["Price"])
+            item_total = str(f'{total:.2f}')
+            return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals, price_total=item_total)
+    return redirect(url_for('login'), code=302) 
 
 @app.route('/cart.css')
 def shopping_cart_css():
@@ -136,7 +153,7 @@ def login():
 
                 users_db.update_one({"username": username}, {"$set": {"auth_token": token_hash}})
 
-                cookie_stuff = authentication.process_cookies(request)
+                #cookie_stuff = authentication.process_cookies(request)
                 response = make_response(redirect('/'))
                 print("RANDOMTOKENLOGIN", random_token, flush = True)
                 response.set_cookie("token", random_token, 7200, None, None, None, False, True, None)
@@ -229,7 +246,6 @@ def listing_css():
 @app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
     if request.method == 'POST':
-
         if "token" not in request.cookies:
             return redirect(url_for('login'), code=302)
         auth_token = request.cookies.get("token")
@@ -240,6 +256,18 @@ def new_listing():
         username = user_record["username"]
 
         item_name = request.form["Name"]
+        since_last_space = 0
+        curr_index = 0
+        for char in item_name:
+            if char != ' ':
+                since_last_space += 1
+            else:
+                since_last_space = 0
+            if since_last_space >= 17:
+                item_name = item_name[:curr_index] + " " + item_name[curr_index:]
+                since_last_space = 0
+            curr_index += 1
+
         if not item_name:
             return redirect(url_for('listing_page'), code=302)
         item_name = item_name.replace("&","&amp")
@@ -256,6 +284,18 @@ def new_listing():
         item_description = request.form["Description"]
         if not item_description:
             item_description = "No Description"
+        since_last_space = 0
+        curr_index = 0
+        for char in item_description:
+            if char != ' ':
+                since_last_space += 1
+            else:
+                since_last_space = 0
+            if since_last_space >= 26:
+                item_description = item_description[:curr_index] + " " + item_description[curr_index:]
+                since_last_space = 0
+            curr_index += 1
+        
         item_description = item_description.replace("&","&amp")
         item_description = item_description.replace("<","&lt")
         item_description = item_description.replace(">","&gt")
@@ -266,59 +306,106 @@ def new_listing():
         for char in item_price:
             if char not in price_alphabet:
                 return redirect(url_for('listing_page'), code=302)
+        item_price = float(item_price)
+        item_price = str(f'{item_price:.2f}')
         if not request.files["Image"]:
+            return redirect(url_for('listing_page'), code=302)
+        elif len(item_name) > 35 or len(item_description) > 85 or len(item_price) > 15:
             return redirect(url_for('listing_page'), code=302)
         else:
             image_name = "images/" + item_name + ".jpg"
             request.files["Image"].save(image_name)
         #insert item into user listings database
-        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
+        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price, "username":username})
     return redirect(url_for('listing_page'), code=302)
 
 @app.route('/addtocart', methods=('GET','POST'))
 def add_cart():
     if request.method == "POST":
-        item_name = request.form["ItemName"]
-        item_price = ''
-        item_description = ''
-        item_image = ''
+        if "token" in request.cookies:
+            auth_token = request.cookies.get("token")
+            auth_hash = hashlib.sha256(auth_token.encode()).digest()
+            user_record = users_db.find_one({"auth_token":auth_hash})
+            if user_record:
+                username = user_record["username"]
+                item_name = request.form["ItemName"]
+                already_in_cart = cart_db.find_one({
+                    '$and':[
+                        {"username":username},
+                        {"Name":item_name}
+                    ]
+                })
+                if already_in_cart:
+                    return redirect(url_for('listing_page'), code=302)
+                item_price = ''
+                item_description = ''
+                for data in listing_db.find({}):
+                    if data["Name"] == item_name:
+                        item_description = data["Description"]
+                        item_price = data["Price"]
+                cart_db.insert_one({"username":username, "Name":item_name, "Description":item_description, "Price":item_price})
+                return redirect(url_for('listing_page'), code=302)
+            return redirect(url_for('login'), code=302) 
+        return redirect(url_for('login'), code=302)
+    return redirect(url_for('home_page'), code=302)
 
-        for data in listing_db.find({}):
-            if data["Name"] == item_name:
-                item_description = data["Description"]
-                item_price = data["Price"]
-               
-        print(item_name)
-        print(item_price)
-        print(item_description)
-
-        cart_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
-    return redirect(url_for('shopping_cart'), code=302)
-
-@app.route('/remove', methods=('GET','POST'))
+@app.route('/remove_cart', methods=('GET','POST'))
 def update_cart():
     if request.method == "POST":
-        item_name = request.form["Item_ID"]
-        item_price = ''
-        item_description = ''
-
-        for data in cart_db.find({}):
-            if data["Name"] == item_name:
-                item_description = data["Description"]
-                item_price = data["Price"]
-          
-        print(item_name)
-        print(item_price) 
-        print(item_description)
-
-        cart_db.delete_one({"Name":item_name})
-
+        if "token" in request.cookies:
+            auth_token = request.cookies.get("token")
+            auth_hash = hashlib.sha256(auth_token.encode()).digest()
+            user_record = users_db.find_one({"auth_token":auth_hash})
+            if user_record:
+                username = user_record["username"]
+                item_name = request.form["Item_ID"]
+                cart_db.delete_one({
+                    '$and':[
+                        {"username":username},
+                        {"Name":item_name}
+                    ] 
+                })
+                return redirect(url_for('shopping_cart'), code=302)
+            return redirect(url_for('login'), code=302)
+        return redirect(url_for('login'), code=302)
     return redirect(url_for('shopping_cart'), code=302)
+
+@app.route('/checkout_pressed', methods=('GET','POST'))
+def checkout_user():
+    if request.method == "POST":
+        if "token" in request.cookies:
+            auth_token = request.cookies.get("token")
+            auth_hash = hashlib.sha256(auth_token.encode()).digest()
+            user_record = users_db.find_one({"auth_token":auth_hash})
+            if user_record:
+                username = user_record["username"]
+                cart_records = cart_db.find({"username":username})
+                if cart_records:
+                    for item in cart_records:
+                        itemname = item["Name"]
+                        sold_db.insert_one(item)
+                        purchased_db.insert_one(item)
+                        listing_db.delete_one({"Name":itemname})
+                        cart_db.delete_many({"Name":itemname})
+                    return redirect(url_for("my_account"), code=302)
+                return redirect(url_for("/shoppingcart"), code=302)
+        return redirect(url_for('login'), code=302)
+    return redirect(url_for("my_account"), code=302)
 
 @app.route('/listing/<itemname>')
 def listing_image(itemname):
     #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
     listing_record = listing_db.find_one({"Name":itemname.replace(".jpg","")})
+    if listing_record:
+        image_path = "images/" + itemname
+        return send_file(image_path,mimetype="image/jpg")
+    else:
+        abort(404)
+
+@app.route('/prevlisting/<itemname>')
+def prevlisting_image(itemname):
+    #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
+    listing_record = purchased_db.find_one({"Name":itemname.replace(".jpg","")})
     if listing_record:
         image_path = "images/" + itemname
         return send_file(image_path,mimetype="image/jpg")
@@ -333,13 +420,16 @@ def my_account():
         user_record = users_db.find_one({"auth_token":auth_hash})
         if user_record:
             username = user_record["username"]
-
-            return render_template("user_account/account.html")
+            user_purchases = purchased_db.find({"username":username})
+            user_sold = sold_db.find({"username":username})
+            user_listings = listing_db.find({"username":username})
+            return render_template("user_account/account.html", purchased_items=user_purchases, current_listings=user_listings, prior_listings=user_sold)
     return redirect(url_for('login'), code=302)   
 
 @app.route('/account.css')
 def my_account_css():
     return send_file('templates/user_account/account.css')
+
 @app.route('/cart/<itemname>')
 def cart_image(itemname):
     #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
@@ -349,6 +439,11 @@ def cart_image(itemname):
         return send_file(image_path,mimetype="image/jpg")
     else:
         abort(404)
+
+@app.after_request #automatically sets sercurity headers including nosniff
+def set_security(response):
+    secure_headers.framework.flask(response)
+    return response
 
 
 if __name__ == '__main__':

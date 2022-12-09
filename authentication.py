@@ -27,11 +27,8 @@ def process_cookies(request):
             a = {}
             print("tokens set", flush = True)
 
-
-            visit_count = int(request.cookies.get("visit_count")) + 1
             token = str(request.cookies.get("token"))
 
-            print(visit_count)
             print(token)
 
             hashed_token = hashlib.sha256(token.encode()).digest() #auth token 
@@ -48,7 +45,7 @@ def process_cookies(request):
                 
 
                 # response = "HTTP/1.1" + " " + "200 " + " OK\r\nContent-Type: " + "text/html; charset=utf-8" + "\r\nX-Content-Type-Options: nosniff\r\n" + "Set-Cookie: visits=" + str(visit_count)+ "; token=" + str(hashed_token) +"; Max-Age=3600; HttpOnly"
-                return ({"token": random_token, "visit_count": str(visit_count), "username": app.escapeHTML(user_info['username']), "pre_hash_auth_token": token})
+                return ({"token": random_token, "username": app.escapeHTML(user_info['username']), "pre_hash_auth_token": token})
                 # response = make_response(render_template("home.html", token =  random_token, visit_count = str(visit_count), username = app.escape_html(user_info['username'])))
                 # response.headers["location"] = url_for("")
                 # response.set_cookie("visits", str(visit_count), 7200)
@@ -74,8 +71,6 @@ def process_cookies(request):
         #     return ({"token": random_token, "visit_count": str(visit_count)})
 
             # print("this is response", response)
-            
-        print("THISISVISITS", visit_count)
 
     else: # first ever time loading page 
         print("cookies not set", flush=True)
@@ -86,7 +81,7 @@ def process_cookies(request):
         print(random_token)
         tokens_db.insert_one({"token": random_token})
         # template = template_engine.render_template('index.html', {"token": random_token, "visit_count": str(visit_count)})
-        return ({"token": random_token, "visit_count": str(visit_count)})
+        return ({"token": random_token})
         # response = make_response(render_template("home.html", token =  random_token, visit_count = str(visit_count)))
         # response.headers["location"] = url_for("")
         # response.set_cookie("visits", str(1), 7200)
