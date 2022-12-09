@@ -21,6 +21,8 @@ cart_db = mydatabase['items']
 users_db = mydatabase['users']
 tokens_db = mydatabase['tokens']
 uaccount_db = mydatabase['user_accounts']
+sold_db = mydatabase['sold']
+purchased_db = mydatabase['purchased']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
@@ -65,9 +67,14 @@ def shopping_cart():
         if user_record:
             username = user_record["username"]
             cart_vals = cart_db.find({"username":username})
-            return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
+            records = cart_db.find({"username":username})
+            total = 0
+            if records:
+                for item in records:
+                    total += float(item["Price"])
+            item_total = str(f'{total:.2f}')
+            return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals, price_total=item_total)
     return redirect(url_for('login'), code=302) 
-
 
 @app.route('/cart.css')
 def shopping_cart_css():
@@ -243,6 +250,18 @@ def new_listing():
         username = user_record["username"]
 
         item_name = request.form["Name"]
+        since_last_space = 0
+        curr_index = 0
+        for char in item_name:
+            if char != ' ':
+                since_last_space += 1
+            else:
+                since_last_space = 0
+            if since_last_space >= 17:
+                item_name = item_name[:curr_index] + " " + item_name[curr_index:]
+                since_last_space = 0
+            curr_index += 1
+
         if not item_name:
             return redirect(url_for('listing_page'), code=302)
         item_name = item_name.replace("&","&amp")
@@ -259,6 +278,18 @@ def new_listing():
         item_description = request.form["Description"]
         if not item_description:
             item_description = "No Description"
+        since_last_space = 0
+        curr_index = 0
+        for char in item_description:
+            if char != ' ':
+                since_last_space += 1
+            else:
+                since_last_space = 0
+            if since_last_space >= 26:
+                item_description = item_description[:curr_index] + " " + item_description[curr_index:]
+                since_last_space = 0
+            curr_index += 1
+        
         item_description = item_description.replace("&","&amp")
         item_description = item_description.replace("<","&lt")
         item_description = item_description.replace(">","&gt")
@@ -269,13 +300,17 @@ def new_listing():
         for char in item_price:
             if char not in price_alphabet:
                 return redirect(url_for('listing_page'), code=302)
+        item_price = float(item_price)
+        item_price = str(f'{item_price:.2f}')
         if not request.files["Image"]:
+            return redirect(url_for('listing_page'), code=302)
+        elif len(item_name) > 35 or len(item_description) > 85 or len(item_price) > 15:
             return redirect(url_for('listing_page'), code=302)
         else:
             image_name = "images/" + item_name + ".jpg"
             request.files["Image"].save(image_name)
         #insert item into user listings database
-        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
+        listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price, "username":username})
     return redirect(url_for('listing_page'), code=302)
 
 @app.route('/addtocart', methods=('GET','POST'))
@@ -295,7 +330,7 @@ def add_cart():
                     ]
                 })
                 if already_in_cart:
-                    return redirect(url_for('shopping_cart'), code=302)
+                    return redirect(url_for('listing_page'), code=302)
                 item_price = ''
                 item_description = ''
                 for data in listing_db.find({}):
@@ -303,10 +338,10 @@ def add_cart():
                         item_description = data["Description"]
                         item_price = data["Price"]
                 cart_db.insert_one({"username":username, "Name":item_name, "Description":item_description, "Price":item_price})
-                return redirect(url_for('shopping_cart'), code=302)
+                return redirect(url_for('listing_page'), code=302)
             return redirect(url_for('login'), code=302) 
         return redirect(url_for('login'), code=302)
-    return redirect(url_for('shopping_cart'), code=302)
+    return redirect(url_for('home_page'), code=302)
 
 @app.route('/remove_cart', methods=('GET','POST'))
 def update_cart():
@@ -329,10 +364,42 @@ def update_cart():
         return redirect(url_for('login'), code=302)
     return redirect(url_for('shopping_cart'), code=302)
 
+@app.route('/checkout_pressed', methods=('GET','POST'))
+def checkout_user():
+    if request.method == "POST":
+        if "token" in request.cookies:
+            auth_token = request.cookies.get("token")
+            auth_hash = hashlib.sha256(auth_token.encode()).digest()
+            user_record = users_db.find_one({"auth_token":auth_hash})
+            if user_record:
+                username = user_record["username"]
+                cart_records = cart_db.find({"username":username})
+                if cart_records:
+                    for item in cart_records:
+                        itemname = item["Name"]
+                        sold_db.insert_one(item)
+                        purchased_db.insert_one(item)
+                        listing_db.delete_one({"Name":itemname})
+                        cart_db.delete_many({"Name":itemname})
+                    return redirect(url_for("my_account"), code=302)
+                return redirect(url_for("/shoppingcart"), code=302)
+        return redirect(url_for('login'), code=302)
+    return redirect(url_for("my_account"), code=302)
+
 @app.route('/listing/<itemname>')
 def listing_image(itemname):
     #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
     listing_record = listing_db.find_one({"Name":itemname.replace(".jpg","")})
+    if listing_record:
+        image_path = "images/" + itemname
+        return send_file(image_path,mimetype="image/jpg")
+    else:
+        abort(404)
+
+@app.route('/prevlisting/<itemname>')
+def prevlisting_image(itemname):
+    #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
+    listing_record = purchased_db.find_one({"Name":itemname.replace(".jpg","")})
     if listing_record:
         image_path = "images/" + itemname
         return send_file(image_path,mimetype="image/jpg")
@@ -347,8 +414,10 @@ def my_account():
         user_record = users_db.find_one({"auth_token":auth_hash})
         if user_record:
             username = user_record["username"]
-
-            return render_template("user_account/account.html")
+            user_purchases = purchased_db.find({"username":username})
+            user_sold = sold_db.find({"username":username})
+            user_listings = listing_db.find({"username":username})
+            return render_template("user_account/account.html", purchased_items=user_purchases, current_listings=user_listings, prior_listings=user_sold)
     return redirect(url_for('login'), code=302)   
 
 @app.route('/account.css')

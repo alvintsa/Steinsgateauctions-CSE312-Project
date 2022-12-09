@@ -9,6 +9,19 @@ body {
   width: 100%;
   padding: 20px 20px;
 }
+
+.checkout_box {
+  margin:auto;
+  padding:10px;
+  border: 2px solid;
+  background-color: white;
+  color:black;
+  box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.25);
+  max-width: 20%;
+  text-align: center;
+  font-family: arial;
+}
+
 .navigation {
   list-style-type: none;
   margin:0;
@@ -68,7 +81,10 @@ body {
 padding: 0 16px;
 }
 
-
+.price {
+  color: black;
+  font-size: 22px;
+}
 
 .container::after, .row::after {
 content: "";

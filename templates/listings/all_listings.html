@@ -22,27 +22,25 @@
         <h4>Fields with * are Required</h4>
         <br/>
         <label for="item-name">*Item Name: </label>
-        <input id="item-name" type="text" name="Name" value = "">
+        <input id="item-name" type="text" maxlength="30" name="Name" value = "">
         <label for="item-description">Description: </label>
-        <input id="item-description" type="text" name="Description" value="">
+        <input id="item-description" type="text" maxlength="75" name="Description" value="">
         <label for="listing-price">*Price (No commas): $</label>
-        <input id="item-price" type="text" name="Price" value="">
+        <input id="item-price" type="text" maxlength="8" name="Price" value="">
         <label for="item-image">*Image: </label>
         <input id="item-image" type="file" name="Image">
         <input type="submit" value="Post Listing">
     </form>
 
     <br/>
-
     {% block listings %}
     {% for line in listing_vals %}
     <div class="listing" style="width:225px; height:450px">
-        <br>
         <img src="/listing/{{ line['Name'] }}.jpg" alt="{{ line['Name'] }}-image" style="width:200px; height:200px">
-        <h2>{{ (line['Name'].replace('-',' ')).replace('~','') }}</h2>
+        <h2 class="listfield">{{ (line['Name'].replace('-',' ')).replace('~','') }}</h2>
         <p class="price">${{ line["Price"] }}</p>
-        <p>{{ line['Description'] }}</p>
-        <form action="/addtocart" id="cart-form" method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+        <p class="listfield">{{ line['Description'] }}</p>
+        <form action="/addtocart" id="cart-form" method="post" enctype="multipart/form-data">
             <input id="itemId" value="{{ line['Name'] }}" name="ItemName" hidden>
             <input type="submit" id="addtocart" value= "Add to Cart">
         </form>
