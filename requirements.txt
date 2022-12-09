@@ -5,4 +5,4 @@ python-socketio
 # socket.io.js == 2.2.0
 pymongo~=4.0.1
 bcrypt
-
+secure
