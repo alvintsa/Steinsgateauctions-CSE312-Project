@@ -1,4 +1,5 @@
 from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
+from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
 from secure import Secure
 secure_headers = Secure()
@@ -7,13 +8,15 @@ import random
 import string
 import hashlib
 
+
 import authentication
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 #Security Considerations
     #x-content-type nosniff set by secure on all responses
-    #html escaped in all form data that can be returned to some user
+    #html escaped in all form data that can be requested by some user
     #all passwords stored hashed and salted
     #auth tokens stored hashed
     #auth tokens cookie set http only
@@ -56,6 +59,12 @@ def home_page():
         # response = make_response(render_template("home.html", listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"]))
         # return render_template('home.html',listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"])
     return render_template('home.html')
+
+@socketio.on('connect')
+def test_connect():
+    print("CONNECTED", flush = True)
+
+
 @app.route('/home.css')
 def home_css():
     return send_file('templates/home.css', mimetype="text/css")
@@ -98,7 +107,15 @@ def auction_page():
         return render_template('auctions/auction.html', auctions_vals=auctions_vals)
     else:
         return render_template('auctions/auction.html')
+    
+@app.route("/functions.js")
+def functions_js():
+    return send_file('functions.js', mimetype="text/js")
 
+@app.route("/websocket")
+def websocket():
+    print("penis", flush = True)
+    
 @app.route('/image-upload', methods=('GET', 'POST'))
 def image_load():
     if request.method == 'POST':
@@ -447,4 +464,6 @@ def set_security(response):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='5000')
+    app.run(debug=True, host='0.0.0.0', port='8080')
+    socketio.run(app, host='0.0.0.0', port='8080', allow_unsafe_werkzeug=True)
+

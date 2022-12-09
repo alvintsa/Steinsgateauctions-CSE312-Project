@@ -1,5 +1,8 @@
 flask
-flask-socketio==5.3.1
+flask-socketio
+python-engineio 
+python-socketio
+# socket.io.js == 2.2.0
 pymongo~=4.0.1
 bcrypt
 secure
