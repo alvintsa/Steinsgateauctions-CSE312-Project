@@ -15,49 +15,39 @@ app = Flask(__name__)
 
 client = MongoClient("mongo")
 mydatabase = client['db']
-
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
 cart_db = mydatabase['items']
 users_db = mydatabase['users']
 tokens_db = mydatabase['tokens']
+uaccount_db = mydatabase['user_accounts']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
 
 @app.route('/')
 def home_page():
-    visit_count = request.cookies.get("visit_count")
-    print("VISITS", visit_count, flush=True)
     current_listings = listing_db.find().limit(5)
     # cookie_stuff = authentication.process_cookies(request)
-
     if current_listings:
-        if visit_count: # if logged in
-            cookie_stuff = authentication.process_cookies(request)
-            
-            token = cookie_stuff["pre_hash_auth_token"]
-            visit_count = cookie_stuff["visit_count"]
-            print("ANIME", visit_count, flush = True)
-            username = cookie_stuff["username"]
-            # hashed_token = cookie_stuff["hashed_token"]
-
-            response = make_response(render_template("home.html", listing_vals=current_listings, token = "penis", visit_count = cookie_stuff["visit_count"], username = username))
-            response.set_cookie("visit_count", str(visit_count))
-            response.set_cookie("token", token)
-
-            return response
-            
+        # if "visit_count" in request.cookies: # if logged in
+        #     visit_count = request.cookies.get("visit_count")
+        #     print("VISITS", visit_count, flush=True)
+        #     cookie_stuff = authentication.process_cookies(request) 
+        #     token = cookie_stuff["pre_hash_auth_token"]
+        #     visit_count = cookie_stuff["visit_count"]
+        #     print("ANIME", visit_count, flush = True)
+        #     username = cookie_stuff["username"]
+        #     # hashed_token = cookie_stuff["hashed_token"]
+        #     response = make_response(render_template("home.html", listing_vals=current_listings, token = "penis", visit_count = cookie_stuff["visit_count"], username = username))
+        #     response.set_cookie("visit_count", str(visit_count))
+        #     response.set_cookie("token", token, 7200, None, None, None, False, True, None)
+        #     return response 
         return(render_template("home.html", listing_vals=current_listings))
-
         # # if first time every loading page; we have to set set cookies 
         # response = make_response(render_template("home.html", listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"]))
-
         # return render_template('home.html',listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"])
-
     return render_template('home.html')
-
-
 @app.route('/home.css')
 def home_css():
     return send_file('templates/home.css', mimetype="text/css")
@@ -68,9 +58,8 @@ def send_logo():
 
 @app.route('/shoppingcart')
 def shopping_cart():
-    cart_vals = list(cart_db.find({}))
-    if(cart_vals != []):
-        cart_vals = list(cart_db.find({}))
+    cart_vals = cart_db.find({},{"_id":0})
+    if cart_vals:
         return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
     else:
         return render_template('shoppingcart/shoppingcart.html')
@@ -150,8 +139,8 @@ def login():
                 cookie_stuff = authentication.process_cookies(request)
                 response = make_response(redirect('/'))
                 print("RANDOMTOKENLOGIN", random_token, flush = True)
-                response.set_cookie("token", random_token)
-                response.set_cookie("visit_count" , cookie_stuff["visit_count"])
+                response.set_cookie("token", random_token, 7200, None, None, None, False, True, None)
+                #response.set_cookie("visit_count" , cookie_stuff["visit_count"])
 
                 return response
             else:
@@ -159,7 +148,6 @@ def login():
         else:
             abort(404)
    
-
 @app.route('/register', methods = ('GET', 'POST'))
 def register():
     print("REGISTER? Anyone there?", flush=True)
@@ -222,11 +210,17 @@ def auction_css():
 
 @app.route('/listings')
 def listing_page():
-    all_listings = listing_db.find({},{"_id":0})
-    if all_listings:
-        return render_template("listings/all_listings.html", listing_vals=all_listings)
-    else:
-        return render_template("listings/all_listings.html")
+    if "token" in request.cookies:
+        auth_token = request.cookies.get("token")
+        auth_hash = hashlib.sha256(auth_token.encode()).digest()
+        user_record = users_db.find_one({"auth_token":auth_hash})
+        if user_record:
+            all_listings = listing_db.find({},{"_id":0})
+            if all_listings:
+                return render_template("listings/all_listings.html", listing_vals=all_listings)
+            else:
+                return render_template("listings/all_listings.html")
+    return redirect(url_for('login'), code=302)
 
 @app.route('/listings.css')
 def listing_css():
@@ -235,6 +229,16 @@ def listing_css():
 @app.route('/create-listing', methods=('GET','POST'))
 def new_listing():
     if request.method == 'POST':
+
+        if "token" not in request.cookies:
+            return redirect(url_for('login'), code=302)
+        auth_token = request.cookies.get("token")
+        auth_hash = hashlib.sha256(auth_token.encode()).digest()
+        user_record = users_db.find_one({"auth_token":auth_hash})
+        if not user_record:
+            return redirect(url_for('login'), code=302)
+        username = user_record["username"]
+
         item_name = request.form["Name"]
         if not item_name:
             return redirect(url_for('listing_page'), code=302)
@@ -267,14 +271,80 @@ def new_listing():
         else:
             image_name = "images/" + item_name + ".jpg"
             request.files["Image"].save(image_name)
+        #insert item into user listings database
         listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
     return redirect(url_for('listing_page'), code=302)
+
+@app.route('/addtocart', methods=('GET','POST'))
+def add_cart():
+    if request.method == "POST":
+        item_name = request.form["ItemName"]
+        item_price = ''
+        item_description = ''
+        item_image = ''
+
+        for data in listing_db.find({}):
+            if data["Name"] == item_name:
+                item_description = data["Description"]
+                item_price = data["Price"]
+               
+        print(item_name)
+        print(item_price)
+        print(item_description)
+
+        cart_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
+    return redirect(url_for('shopping_cart'), code=302)
+
+@app.route('/remove', methods=('GET','POST'))
+def update_cart():
+    if request.method == "POST":
+        item_name = request.form["Item_ID"]
+        item_price = ''
+        item_description = ''
+
+        for data in cart_db.find({}):
+            if data["Name"] == item_name:
+                item_description = data["Description"]
+                item_price = data["Price"]
+          
+        print(item_name)
+        print(item_price) 
+        print(item_description)
+
+        cart_db.delete_one({"Name":item_name})
+
+    return redirect(url_for('shopping_cart'), code=302)
 
 @app.route('/listing/<itemname>')
 def listing_image(itemname):
     #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
     listing_record = listing_db.find_one({"Name":itemname.replace(".jpg","")})
     if listing_record:
+        image_path = "images/" + itemname
+        return send_file(image_path,mimetype="image/jpg")
+    else:
+        abort(404)
+
+@app.route('/account')
+def my_account():
+    if "token" in request.cookies:
+        auth_token = request.cookies.get("token")
+        auth_hash = hashlib.sha256(auth_token.encode()).digest()
+        user_record = users_db.find_one({"auth_token":auth_hash})
+        if user_record:
+            username = user_record["username"]
+
+            return render_template("user_account/account.html")
+    return redirect(url_for('login'), code=302)   
+
+@app.route('/account.css')
+def my_account_css():
+    return send_file('templates/user_account/account.css')
+@app.route('/cart/<itemname>')
+def cart_image(itemname):
+    #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
+    cart_record = cart_db.find_one({"Name":itemname.replace(".jpg","")})
+    if cart_record:
         image_path = "images/" + itemname
         return send_file(image_path,mimetype="image/jpg")
     else:

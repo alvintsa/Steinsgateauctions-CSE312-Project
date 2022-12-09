@@ -1,6 +1,6 @@
 body {
-    background-color: lightblue;
-    color: white;
+  background-image: url("backdrop.jpg");
+  background-attachment: fixed;
 }
 
 .obox_header {
@@ -52,18 +52,16 @@ body {
   color: white;
 }
 
-
-.column {
-float: left;
-width: 200px;
-height: 250px;
-padding: 10px;
-}
-
 .card {
-border-style: solid;
-border-color: black;
-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  margin:25px;
+  border: 2px solid;
+  background-color: white;
+  color:black;
+  box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.25);
+  max-width: 20%;
+  text-align: center;
+  font-family: arial;
+  display:inline-block;
 }
 
 .container {
