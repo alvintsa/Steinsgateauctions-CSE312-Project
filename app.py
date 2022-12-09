@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 #Security Considerations
     #x-content-type nosniff set by secure on all responses
-    #html escaped in all form data that can be returned to some user
+    #html escaped in all form data that can be requested by some user
     #all passwords stored hashed and salted
     #auth tokens stored hashed
     #auth tokens cookie set http only
