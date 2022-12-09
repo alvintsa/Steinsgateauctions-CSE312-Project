@@ -1,5 +1,7 @@
 from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
 from pymongo import MongoClient
+from secure import Secure
+secure_headers = Secure()
 import bcrypt
 import random
 import string
@@ -9,9 +11,13 @@ import authentication
 
 app = Flask(__name__)
 
-#just making sure framework is installed properly
-#execute python app.py
-#may need to update interpreter to venv
+#Security Considerations
+    #x-content-type nosniff set by secure on all responses
+    #html escaped in all form data that can be returned to some user
+    #all passwords stored hashed and salted
+    #auth tokens stored hashed
+    #auth tokens cookie set http only
+    #all private pages redirect to login if user is not authenticated
 
 client = MongoClient("mongo")
 mydatabase = client['db']
@@ -147,7 +153,7 @@ def login():
 
                 users_db.update_one({"username": username}, {"$set": {"auth_token": token_hash}})
 
-                cookie_stuff = authentication.process_cookies(request)
+                #cookie_stuff = authentication.process_cookies(request)
                 response = make_response(redirect('/'))
                 print("RANDOMTOKENLOGIN", random_token, flush = True)
                 response.set_cookie("token", random_token, 7200, None, None, None, False, True, None)
@@ -433,6 +439,11 @@ def cart_image(itemname):
         return send_file(image_path,mimetype="image/jpg")
     else:
         abort(404)
+
+@app.after_request #automatically sets sercurity headers including nosniff
+def set_security(response):
+    secure_headers.framework.flask(response)
+    return response
 
 
 if __name__ == '__main__':
