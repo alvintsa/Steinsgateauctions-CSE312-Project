@@ -12,6 +12,8 @@ document.addEventListener("keypress", function (event) {
 
 // Read the comment the user is sending to chat and send it to the server over the WebSocket as a JSON string
 function sendMessage() {
+    console.error("REACHED HERE")
+    console.log("REACHED HERE")
     const chatBox = document.getElementById("chat-comment");
     const comment = chatBox.value;
     chatBox.value = "";

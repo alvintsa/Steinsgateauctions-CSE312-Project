@@ -3,7 +3,7 @@
     <title>Steins;Gate Auctions</title>
     <link rel="stylesheet" type="text/css" href="auction.css"/>
 </head>
-
+<body onload="welcome();">
 <div class = "obox_header">
   <ul class="navigation">
       <li class="navlink"><a href="/">Home</a></li>
@@ -16,9 +16,7 @@
 </div>
 
 <h1 style="text-align:center">Steins;Gate Auctions</h1>
-<body onload="welcome();">
-    <script src="../../functions.js"></script>
-</body>
+
 <!--timer-->
 
 <!--timer-->
@@ -48,8 +46,9 @@
         <b>Time left: 60 minutes</b>
         <p>Highest Bid: <b>$2100</b> from <b>Jesse</b></p>
         <p>He is the main character</p>
-        <input id="chat-comment" type="text" placeholder = "Enter Bid">
-        <p><button class="button2" onclick="sendMessage()">Place Bid</button></p>
+        <input id="chat-comment" type="text" placeholder = "Enter Bid" name="comment">
+        <p><button class="button2" onclick="sendMessage()" name="comment">Place Bid</button></p>
+        <div id="chat"></div>
       </div>
     </div>
 </div>
@@ -62,8 +61,9 @@
         <b>Time left: 40 minutes</b>
         <p>Highest Bid: <b>Priceless</b> from <b>Okabe</b></p>
         <p>She is the second main character</p>
-        <input id="chat-comment" type="text" placeholder = "Enter Bid">
+        <input id="chat-comment" type="text" placeholder = "Enter Bid" name="comment">
         <p><button class="button2" onclick="sendMessage()">Place Bid</button></p>
+        <div id="chat"></div>
       </div>
     </div>
 </div>
@@ -79,11 +79,12 @@
         <p>Highest Bid: <b>{{ highest_bid }}</b> from:  <b>{{ user }}</b></p>
         <p>{{ line['description'] }}</p>
         <input id="chat-comment" type="text" placeholder = "Enter Bid">
-        <p><button class="button2" onclick="sendMessage()">Place Bid</button></p>
+        <p><button class="button2" onclick="sendMessage()" name="comment">Place Bid</button></p>
       </div>
     </div>
 </div>
 {% endfor %}
 {% endblock %}
-
+<script src="functions.js"></script>
+</body>
 </html>
