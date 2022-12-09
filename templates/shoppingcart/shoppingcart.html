@@ -35,12 +35,15 @@
 {% for line in cart_vals %}
 <div class="column">
     <div class="card">
-      <img src="/cart/{{ line['image_name']}}" style="width:100%">
+      <img src="/cart/{{ line['Name'] }}.jpg" alt="{{ line['Name'] }}-image" style="width:200px; height:200px">
       <div class="container">
-        <h2>{{ line['item_name'] }}</h2>
-        <b>{{ line['Price'] }}</b>
-        <p>{{ line['description'] }}</p>
-        <p><button class="button2">Remove</button></p>
+        <h2>{{ (line['Name'].replace('-',' ')).replace('~','') }}</h2>
+        <p class="price">${{ line["Price"] }}</p>
+        <p>{{ line['Description'] }}</p>
+        <form action="/remove" method="post" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+          <input value="{{(line['Name'].replace('-',' ')).replace('~','') }}" name="Item_ID" hidden>
+          <input type="submit" value= "Remove">
+      </form>
       </div>
     </div>
 </div>

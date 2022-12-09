@@ -58,9 +58,8 @@ def send_logo():
 
 @app.route('/shoppingcart')
 def shopping_cart():
-    cart_vals = list(cart_db.find({}))
-    if(cart_vals != []):
-        cart_vals = list(cart_db.find({}))
+    cart_vals = cart_db.find({},{"_id":0})
+    if cart_vals:
         return render_template('shoppingcart/shoppingcart.html', cart_vals=cart_vals)
     else:
         return render_template('shoppingcart/shoppingcart.html')
@@ -276,6 +275,46 @@ def new_listing():
         listing_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
     return redirect(url_for('listing_page'), code=302)
 
+@app.route('/addtocart', methods=('GET','POST'))
+def add_cart():
+    if request.method == "POST":
+        item_name = request.form["ItemName"]
+        item_price = ''
+        item_description = ''
+        item_image = ''
+
+        for data in listing_db.find({}):
+            if data["Name"] == item_name:
+                item_description = data["Description"]
+                item_price = data["Price"]
+               
+        print(item_name)
+        print(item_price)
+        print(item_description)
+
+        cart_db.insert_one({"Name":item_name, "Description":item_description, "Price":item_price})
+    return redirect(url_for('shopping_cart'), code=302)
+
+@app.route('/remove', methods=('GET','POST'))
+def update_cart():
+    if request.method == "POST":
+        item_name = request.form["Item_ID"]
+        item_price = ''
+        item_description = ''
+
+        for data in cart_db.find({}):
+            if data["Name"] == item_name:
+                item_description = data["Description"]
+                item_price = data["Price"]
+          
+        print(item_name)
+        print(item_price) 
+        print(item_description)
+
+        cart_db.delete_one({"Name":item_name})
+
+    return redirect(url_for('shopping_cart'), code=302)
+
 @app.route('/listing/<itemname>')
 def listing_image(itemname):
     #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
@@ -301,6 +340,15 @@ def my_account():
 @app.route('/account.css')
 def my_account_css():
     return send_file('templates/user_account/account.css')
+@app.route('/cart/<itemname>')
+def cart_image(itemname):
+    #ensuring a record exists guarantees the image exists and that it is only accessing a file submitted by a user from the listing form
+    cart_record = cart_db.find_one({"Name":itemname.replace(".jpg","")})
+    if cart_record:
+        image_path = "images/" + itemname
+        return send_file(image_path,mimetype="image/jpg")
+    else:
+        abort(404)
 
 
 if __name__ == '__main__':
