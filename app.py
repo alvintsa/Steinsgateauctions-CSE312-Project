@@ -27,13 +27,13 @@ def escapeHTML(input):
 
 @app.route('/')
 def home_page():
+    visit_count = request.cookies.get("visit_count")
+    print("VISITS", visit_count, flush=True)
     current_listings = listing_db.find().limit(5)
     # cookie_stuff = authentication.process_cookies(request)
 
     if current_listings:
-        if "visit_count" in request.cookies: # if logged in
-            visit_count = request.cookies.get("visit_count")
-            print("VISITS", visit_count, flush=True)
+        if visit_count: # if logged in
             cookie_stuff = authentication.process_cookies(request)
             
             token = cookie_stuff["pre_hash_auth_token"]
@@ -44,7 +44,7 @@ def home_page():
 
             response = make_response(render_template("home.html", listing_vals=current_listings, token = "penis", visit_count = cookie_stuff["visit_count"], username = username))
             response.set_cookie("visit_count", str(visit_count))
-            response.set_cookie("token", token, 7200, None, None, None, False, True, None)
+            response.set_cookie("token", token)
 
             return response
             
@@ -150,7 +150,7 @@ def login():
                 cookie_stuff = authentication.process_cookies(request)
                 response = make_response(redirect('/'))
                 print("RANDOMTOKENLOGIN", random_token, flush = True)
-                response.set_cookie("token", random_token, 7200, None, None, None, False, True, None)
+                response.set_cookie("token", random_token)
                 response.set_cookie("visit_count" , cookie_stuff["visit_count"])
 
                 return response
@@ -200,15 +200,6 @@ def register_css():
     print("CSS", request, "CSS", flush = True)
     return send_file('templates/register/registerstyle.css', mimetype= "text/css")
 
-
-@app.route('/functions.js')
-def functions_js():
-    return send_file("functions.js")
-
-@app.route('/websocket')
-def websockets():
-    return('implement websockets')
-
 @app.route('/dog.jpg')
 def ret_dog():
     return send_file("images/dog.jpg",mimetype="image/gif")
@@ -231,17 +222,11 @@ def auction_css():
 
 @app.route('/listings')
 def listing_page():
-    if "token" in request.cookies:
-        auth_token = request.cookies.get("token")
-        auth_hash = hashlib.sha256(auth_token.encode()).digest()
-        user_record = users_db.find_one({"auth_token":auth_hash})
-        if user_record:
-            all_listings = listing_db.find({},{"_id":0})
-            if all_listings:
-                return render_template("listings/all_listings.html", listing_vals=all_listings)
-            else:
-                return render_template("listings/all_listings.html")
-    return redirect(url_for('login'), code=302)
+    all_listings = listing_db.find({},{"_id":0})
+    if all_listings:
+        return render_template("listings/all_listings.html", listing_vals=all_listings)
+    else:
+        return render_template("listings/all_listings.html")
 
 @app.route('/listings.css')
 def listing_css():
