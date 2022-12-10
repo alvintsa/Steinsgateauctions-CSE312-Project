@@ -44,11 +44,31 @@
       <div class="container">
         <h2>Okabe</h2>
         <b>Time left: 60 minutes</b>
-        <p>Highest Bid: <b>$2100</b> from <b>Jesse</b></p>
+        <p>Highest Bid: <b>{{ bid }}</b> from <b>XXXXX</b></p>
         <p>He is the main character</p>
-        <input id="chat-comment" type="text" placeholder = "Enter Bid" name="comment">
-        <p><button class="button2" onclick="sendMessage()" name="comment">Place Bid</button></p>
-        <div id="chat"></div>
+        <input id="bid" type="text" placeholder = "Enter Bid" class="sync">
+        <p><button class="button2" onClick="reload_page()" name="comment">Place Bid</button></p>
+
+        <script>
+            function reload_page(){
+                window.location.reload();
+            }
+        </script>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            $(document).ready(function(){
+                var socket = io.connect();
+                socket.on('replaced values', function(input) {
+                    $('input#'+input.user).val(input.stored_val)
+                });
+                $('input.sync').on('input', function(event) {
+                    socket.emit('replace old value', {user: $(this).attr('id'), stored_val: $(this).val()});
+                    return false;
+                });
+        });
+        </script>
       </div>
     </div>
 </div>
@@ -59,11 +79,34 @@
       <div class="container">
         <h2>Kurisu</h2>
         <b>Time left: 40 minutes</b>
-        <p>Highest Bid: <b>Priceless</b> from <b>Okabe</b></p>
+        <p>Highest Bid: <b>{{ bid }}</b> from <b>Okabe</b></p>
         <p>She is the second main character</p>
-        <input id="chat-comment" type="text" placeholder = "Enter Bid" name="comment">
-        <p><button class="button2" onclick="sendMessage()">Place Bid</button></p>
-        <div id="chat"></div>
+        <input id="bid" type="text" placeholder = "Enter Bid" class="sync">
+        <p><button class="button2" onClick="reload_page()" name="comment">Place Bid</button></p>
+
+        <script>
+            function reload_page(){
+                window.location.reload();
+            }
+        </script>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            $(document).ready(function(){
+                var socket = io.connect();
+                socket.on('connect', function() {
+                    socket.emit('connect');
+                });
+                socket.on('replaced values', function(input) {
+                    $('input#'+input.user).val(input.stored_val)
+                });
+                $('input.sync').on('input', function(event) {
+                    socket.emit('replace old value', {user: $(this).attr('id'), stored_val: $(this).val()});
+                    return false;
+                });
+        });
+        </script>
       </div>
     </div>
 </div>
@@ -76,11 +119,34 @@
       <div class="container">
         <h2>{{ line['item_name'] }}</h2>
         <b>Time left: {{ line['time'] }} minutes</b>
-        <p>Highest Bid: <b>{{ highest_bid }}</b> from:  <b>{{ user }}</b></p>
+        <p>Highest Bid: <b>{{ bid }}</b> from:  <b>{{ user }}</b></p>
         <p>{{ line['description'] }}</p>
         <input id="chat-comment" type="text" placeholder = "Enter Bid">
-        <p><button class="button2" onclick="sendMessage()" name="comment">Place Bid</button></p>
-      </div>
+        <p><button class="button2" onClick="reload_page()" name="comment">Place Bid</button></p>
+
+        <script>
+            function reload_page(){
+                window.location.reload();
+            }
+        </script>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            $(document).ready(function(){
+                var socket = io.connect();
+                socket.on('connect', function() {
+                    socket.emit('connect');
+                });
+                socket.on('replaced values', function(input) {
+                    $('input#'+input.user).val(input.stored_val)
+                });
+                $('input.sync').on('input', function(event) {
+                    socket.emit('replace old value', {user: $(this).attr('id'), stored_val: $(this).val()});
+                    return false;
+                });
+        });
+        </script>      </div>
     </div>
 </div>
 {% endfor %}

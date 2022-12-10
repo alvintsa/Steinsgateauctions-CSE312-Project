@@ -60,10 +60,6 @@ def home_page():
         # return render_template('home.html',listing_vals=current_listings, token = cookie_stuff["token"], visit_count = cookie_stuff["visit_count"])
     return render_template('home.html')
 
-@socketio.on('connect')
-def test_connect():
-    print("CONNECTED", flush = True)
-
 
 @app.route('/home.css')
 def home_css():
@@ -99,14 +95,28 @@ def shopping_cart_css():
 def cart_css():
     return send_file('templates/cart/style.css',mimetype="text/css")
 
+bid_vals = {
+    'bid': 0,
+    'old_bid': 0,
+}
 @app.route('/auctions')
 def auction_page():
     auctions_vals = list(auction_db.find({}))
     if(auctions_vals != []):
         auctions_vals = list(auction_db.find({}))
-        return render_template('auctions/auction.html', auctions_vals=auctions_vals)
+        if(int(bid_vals['bid']) < int(bid_vals['old_bid'])):
+            bid_vals['bid'] = bid_vals['old_bid']
+        else:
+            bid_vals['old_bid'] = bid_vals['bid']
+        return render_template('auctions/auction.html', auctions_vals=auctions_vals, **bid_vals)
     else:
-        return render_template('auctions/auction.html')
+        return render_template('auctions/auction.html', **bid_vals)
+
+@socketio.on('replace old value')
+def value_changed(message):
+    print(bid_vals['bid'], flush=True)
+    bid_vals[message['user']] = message['stored_val']
+    emit('replaced values', message, broadcast=True)
     
 @app.route("/functions.js")
 def functions_js():
@@ -464,6 +474,6 @@ def set_security(response):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='8081')
-    socketio.run(app, host='0.0.0.0', port='8081', allow_unsafe_werkzeug=True)
+    app.run(debug=True, host='0.0.0.0', port='8000')
+    socketio.run(app, host='0.0.0.0', port='8000', allow_unsafe_werkzeug=True)
 
