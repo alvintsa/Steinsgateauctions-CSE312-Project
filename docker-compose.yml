@@ -1,6 +1,10 @@
 version: "3.3"
 services:
   nginx:
+      build: ./nginx
+      ports:
+        - '80:80'
+        - '443:443'
 
   letsencrypt-nginx-proxy-companion:
     restart: always
@@ -16,6 +20,7 @@ services:
     build: .
     environment:
       VIRTUAL_HOST: steinsgateauctions.com
+      LETSENCRYPT_HOST: steinsgateauctions.com
       WAIT_HOSTS: mongo:27017
     ports:
       - "8080:8000"

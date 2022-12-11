@@ -4,6 +4,9 @@ services:
   nginx-proxy:
     restart: always
     image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - "/etc/nginx/vhost.d"
       - "/usr/share/nginx/html"
