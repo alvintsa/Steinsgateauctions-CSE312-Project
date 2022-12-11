@@ -10,7 +10,7 @@ services:
   app:
     build: .
     environment:
-      VIRTUAL_HOST = steinsgateauctions.com
+      VIRTUAL_HOST: steinsgateauctions.com
       WAIT_HOSTS: mongo:27017
     ports:
       - "8080:8000"
