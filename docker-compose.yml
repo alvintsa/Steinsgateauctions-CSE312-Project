@@ -5,11 +5,6 @@ services:
       ports:
         - '80:80'
         - '443:443'
-      volumes:
-      - "/etc/nginx/vhost.d"
-      - "/usr/share/nginx/html"
-      - "/var/run/docker.sock:/tmp/docker.sock:ro"
-      - "/etc/nginx/certs"
 
   letsencrypt-nginx-proxy-companion:
     restart: always
@@ -18,8 +13,6 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     volumes_from:
       - "nginx-proxy"
-
-
 
   mongo:
     image: mongo:4.2.5
