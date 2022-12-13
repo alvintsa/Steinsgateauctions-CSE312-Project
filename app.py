@@ -474,5 +474,5 @@ def set_security(response):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
-    socketio.run(app, host='0.0.0.0', port=8080, allow_unsafe_werkzeug=True)
+    app.run(debug=True, host='0.0.0.0', port=8000)
+    socketio.run(app, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)
