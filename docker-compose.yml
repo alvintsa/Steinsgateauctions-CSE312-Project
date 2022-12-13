@@ -1,21 +1,15 @@
-version: "3.3"
+version: '3.3'
 services:
-
-  letsencrypt-nginx-proxy-companion:
-    restart: always
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    volumes_from:
-      - "nginx-proxy"
-
-  mongo:
-    image: mongo:4.2.5
-  app:
-    build: .
-    environment:
-      VIRTUAL_HOST: steinsgateauctions.com
-      LETSENCRYPT_HOST: steinsgateauctions.com
-      WAIT_HOSTS: mongo:27017
-    ports:
-      - "8080:8000"
+ nginx:
+  build: ./nginx
+  ports:
+    - '80:80'
+    - '443:443'
+ mongo:
+  image: mongo:4.2.5
+ app:
+  build: .
+  environment: 
+    WAIT_HOSTS: mongo:27017
+  ports:
+  - '8080:8000'
