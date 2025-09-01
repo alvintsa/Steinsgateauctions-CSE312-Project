@@ -1,3 +1,6 @@
+import os
+import eventlet
+eventlet.monkey_patch()
 from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
 from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
@@ -8,11 +11,10 @@ import random
 import string
 import hashlib
 
-
 import authentication
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='eventlet')
 
 #Security Considerations
     #x-content-type nosniff set by secure on all responses
@@ -22,7 +24,9 @@ socketio = SocketIO(app)
     #auth tokens cookie set http only
     #all private pages redirect to login if user is not authenticated
 
-client = MongoClient("mongo")
+# Use environment variable for MongoDB URI, fallback to localhost for local dev
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/')
+client = MongoClient(MONGODB_URI)
 mydatabase = client['db']
 auction_db = mydatabase['auctions']
 listing_db = mydatabase['listings']
@@ -474,5 +478,5 @@ def set_security(response):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
-    socketio.run(app, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)
+    port = int(os.environ.get('PORT', 8000))
+    socketio.run(app, host='0.0.0.0', port=port)

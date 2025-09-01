@@ -2,12 +2,15 @@ import bcrypt
 import string
 import random
 import hashlib
+import os
 import app
 
 from flask import Flask, render_template, send_file, request, url_for, redirect, abort, make_response
 from pymongo import MongoClient
 
-client = MongoClient("mongo")
+# Use environment variable for MongoDB URI, fallback to localhost for local dev
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/')
+client = MongoClient(MONGODB_URI)
 mydatabase = client['db']
 
 users_db = mydatabase['users']
