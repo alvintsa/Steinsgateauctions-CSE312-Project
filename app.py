@@ -39,6 +39,9 @@ purchased_db = mydatabase['purchased']
 
 def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
+@app.route("/cron")
+def cron():
+    return { "ok": True }
 
 @app.route('/')
 def home_page():
