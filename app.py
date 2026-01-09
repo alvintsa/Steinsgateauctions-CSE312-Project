@@ -41,7 +41,7 @@ def escapeHTML(input):
     return input.replace('&', "&amp;").replace('<', "&lt").replace('>', "&gt")
 @app.route("/cron")
 def cron():
-    return { "ok": True }
+    return { "", 204 }
 
 @app.route('/')
 def home_page():
